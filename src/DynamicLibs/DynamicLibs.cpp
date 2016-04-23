@@ -5,24 +5,37 @@
 
 volatile std::sig_atomic_t DynamicLibs::sigSwap;
 
-void signalHandler( int sig ) {
+void signalHandler( int sig )
+{
     DynamicLibs::sigSwap = 1;
 }
 
-void DynamicLibs::setup() {
-    std::signal( SIGINT, signalHandler ); // register signal handler
-    // loadLibs();
-    stuff = static_cast< DynamicBinding< GenericInterface > >( loadLib( ofFile("Stuff.so")));
+void DynamicLibs::castLibs( )
+{
+    // cast member variables into action
+    // (make sure these are loaded)
+    // stuff = static_cast< DynamicBinding< GenericInterface > >( libs.at( "Stuff" ) ).object;
+    stuff = static_cast< GenericInterface* >( libs.at( "Stuff" ).object );
 }
 
-void DynamicLibs::update() {
-    if( sigSwap == 1 ) {
+void DynamicLibs::setup( )
+{
+    std::signal( SIGINT, signalHandler );  // register signal handler
+    loadLibs( );
+    castLibs( );
+}
+
+void DynamicLibs::update( )
+{
+    if ( sigSwap == 1 )
+    {
         sigSwap = 0;
-        swapLibs();
+        swapLibs( );
+        castLibs( );
     }
 }
 
-DynamicBinding< void > & DynamicLibs::loadLib( ofFile file )
+DynamicBinding< void >& DynamicLibs::loadLib( ofFile file )
 {
     // ofFile file = std::filesystem::path( apath );
     std::string name = file.getBaseName( );
@@ -41,8 +54,9 @@ DynamicBinding< void > & DynamicLibs::loadLib( ofFile file )
 
 void DynamicLibs::loadLibs() {
     ofDirectory dir( "." ); // resolves to DataPath
-    ofLogNotice( "DynamicLibs" ) << "Looking for dynamic libraries in " << dir.getAbsolutePath();
-    dir.allowExt( "dylib" ); /// @todo hardcoded OS-specific library extension
+    ofLogVerbose( "DynamicLibs" ) << "Looking for dynamic libraries in " << dir.getAbsolutePath();
+    dir.allowExt( "dylib" );
+    dir.allowExt( "so" );   
     dir.listDir();
     for( int i = 0; i < dir.size(); ++i ) {
         ofFile file = dir.getFile( i );
@@ -50,30 +64,33 @@ void DynamicLibs::loadLibs() {
     }
 }
 
-void DynamicLibs::swapLib( std::string name ) {
-    ofLogVerbose( "DynamicLibs" ) << "Hot-swapping single library " << name;
-    auto it = libs.find( name );
-    if( it == libs.end() ) {
-        ofLogError( "DynamicLibs" ) << "no such library loaded: " << name;
-        return;
-    }
-    DynamicBinding< void > & binding = ( *it ).second;
-    // reload library
-    bool ok = bindLib( binding.name,
-                       binding.path,
-                       binding );
-    if( !ok ) ofLogError( "DynamicLibs" ) << "re-binding failed for " << binding.name;
-}
+// void DynamicLibs::swapLib( std::string name ) {
+//     ofLogVerbose( "DynamicLibs" ) << "Hot-swapping single library " << name;
+//     auto it = libs.find( name );
+//     if( it == libs.end() ) {
+//         ofLogError( "DynamicLibs" ) << "no such library loaded: " << name;
+//         return;
+//     }
+//     DynamicBinding< void > & binding = ( *it ).second;
+//     // reload library
+//     bool ok = bindLib( binding.name,
+//                        binding.path,
+//                        binding );
+//     if( !ok ) ofLogError( "DynamicLibs" ) << "re-binding failed for " << binding.name;
+// }
 
-void DynamicLibs::swapLibs() {
+void DynamicLibs::swapLibs( )
+{
     ofLogVerbose( "DynamicLibs" ) << "Hot-swapping all libraries...";
-    for( auto it = libs.begin(); it != libs.end(); ++it ) {
+    for ( auto it = libs.begin( ); it != libs.end( ); ++it )
+    {
         DynamicBinding< void >& binding = ( *it ).second;
         // reload library
         bool ok = bindLib( binding.name,
                            binding.path,
                            binding );
-        if( !ok ) ofLogError( "DynamicLibs" ) << "re-binding failed for " << binding.name;
+        if ( !ok )
+            ofLogError( "DynamicLibs" ) << "re-binding failed for " << binding.name;
     }
 }
 
@@ -111,7 +128,7 @@ bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding< v
         return false;
     }
     // binding
-    out.create = (void * (*)( ))dlsym( out.handle, "create" );
+    out.create = (void* (*)( ))dlsym( out.handle, "create" );
     out.destroy = (void (*)( void* ))dlsym( out.handle, "destroy" );
     if ( ( out.create == nullptr ) || ( out.destroy == nullptr ) )
     {
