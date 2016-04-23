@@ -3,7 +3,7 @@
 # ToDo: commandline options -f --force and -o --once
 
 # ------------------------------------------------------------
-# Configuration
+# User Configuration
 pd_timestamp_file="$0"               # the file to compare for timestamps (this file by default)
 pd_oF_dir=../../..                   # oF root directory
 pd_oF_process_name=double-dragon     # the name of your project
@@ -11,25 +11,27 @@ pd_source_dir=./src/DynamicLibs/Libs # the directory containing the library sour
 pd_target_dir=./bin/data/            # the directory to put the compiled libraries in
 pd_timeout=2                         # interval (in seconds) to check for changed timestamps
 # ------------------------------------------------------------
-# OS-specifics
+# Internal (hands off!)
 case $(uname)
 in
     Linux)
         pd_os=linux64 
         pd_lib_extension=so
         pd_cpp_call="g++ -fPIC -shared"
-        break;;
+        ;;
     Darwin*)
         pd_os=osx
         pd_lib_extension=dylib
         pd_cpp_call="g++ -dynamiclib -flat_namespace -undefined dynamic_lookup"
-        break;;
+        ;;
 esac
 pd_oF_flags=$(cat $pd_oF_dir/libs/openFrameworksCompiled/lib/$pd_os/obj/Release/.compiler_flags)
 # ------------------------------------------------------------
-# Internal (hands off!)
 pd_update_app=0
 pd_renew_timestamp=0
+pd_opt_force=0
+pd_opt_once=0
+pd_find_only_newer="-newer $pd_timestamp_file"
 
 # echo "Usage:"
 # echo " -f, --force"
@@ -37,20 +39,31 @@ pd_renew_timestamp=0
 # echo " -o, --once"
 # echo "        don't loop forever"
 
-# while [ $# -gt 0 ]
-# do
-#     case 
-# done
+while [ $# -gt 0 ]
+do
+    case $1 in
+        -h|--help)
+            echo helping ...
+            ;;
+        -f|--force)
+            echo forcing ...
+            pd_opt_force=1
+            shift 1
+            ;;
+        -o|--once)
+            echo only once ...
+            pd_opt_once=1
+            shift 1
+            ;;
+        *)
+            shift 1
+            ;;
+    esac
+done
 
 echo "Continuously compiling files in $pd_source_dir to $pd_target_dir"
 echo "Press any key to stop ..."
 echo 
-
-# if [ $# -eq 0 ] 
-# then
-#     echo "Usage options"
-#     exit 0
-# fi
 
 function pd_compile_fast () {
     # compile without oF-headers (faster)
@@ -94,9 +107,18 @@ while true :
 do
     # init
     pd_renew_timestamp=0
+    pd_update_app=0
+
+    if [ $pd_opt_force -ne 0 ]
+    then
+        pf_find_opt=""
+        pd_opt_force=0 # only force first loop
+    else
+        pd_find_opt=$pd_find_only_newer
+    fi
 
     # compile any recently changed files
-    for f in $(find $pd_source_dir -name "*.cpp" -newer $pd_timestamp_file)
+    for f in $(find $pd_source_dir -name "*.cpp" $pd_find_opt)
     do
         pd_renew_timestamp=1
         strip_name=$(basename $f .cpp)
@@ -142,7 +164,6 @@ do
             echo done ------------------------------------------------------- $now
             tput sgr0
         else
-            pd_update_app=0
             tput setaf 1
             echo fail XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX $now
             tput sgr0
@@ -153,7 +174,9 @@ do
     [ $pd_update_app      -eq 1 ] && pkill -2 $pd_oF_process_name
     [ $pd_renew_timestamp -eq 1 ] && touch $pd_timestamp_file
 
-    # exit on keypress (single char, timeout 2 seconds)
+    # exit when running with -o|--once
+    [ $pd_opt_once -ne 0 ] && exit 0
+    # or on keypress (single char, timeout 2 seconds)
     read -n1 -t$pd_timeout
     [ $? -eq 0 ] && {
         echo

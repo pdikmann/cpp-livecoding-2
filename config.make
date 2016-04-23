@@ -61,7 +61,7 @@
 #
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
-PROJECT_EXCLUSIONS = src/DynamicLibs/Libs%
+PROJECT_EXCLUSIONS = $(PROJECT_ROOT)/src/DynamicLibs/Libs%
 
 ################################################################################
 # PROJECT LINKER FLAGS

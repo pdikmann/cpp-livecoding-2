@@ -16,6 +16,7 @@ void DynamicLibs::castLibs( )
     // (make sure these are loaded)
     // stuff = static_cast< DynamicBinding< GenericInterface > >( libs.at( "Stuff" ) ).object;
     stuff = static_cast< GenericInterface* >( libs.at( "Stuff" ).object );
+    cam = static_cast< CameraInterface* >( libs.at( "Camera" ).object );
 }
 
 void DynamicLibs::setup( )

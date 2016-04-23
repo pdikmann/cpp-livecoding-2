@@ -7,6 +7,7 @@
 #include "ofFileUtils.h"
 #include "DynamicBinding.h"
 #include "Interfaces/GenericInterface.h"
+#include "Interfaces/CameraInterface.h"
 
 
 class DynamicLibs
@@ -24,6 +25,7 @@ public:
     static volatile std::sig_atomic_t sigSwap;  /// reload flag
     // project-specific variables
     GenericInterface * stuff;
+    CameraInterface * cam;
 
 private:
     // functions
