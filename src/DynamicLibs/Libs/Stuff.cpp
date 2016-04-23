@@ -1,9 +1,6 @@
-extern "C" {
-Stuff* create( );
-void destroy( Stuff* );
-}
+#include "ofColor.h"
 
-struct Stuff
+class Stuff : public GenericInterface
 {
     void update( );
     void draw( );
@@ -15,6 +12,12 @@ void Stuff::update( )
 
 void Stuff::draw( )
 {
+}
+
+// -------------------------------------------------------------
+extern "C" {
+Stuff* create( );
+void destroy( Stuff* );
 }
 
 Stuff* create( )
