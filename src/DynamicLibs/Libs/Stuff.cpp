@@ -1,4 +1,5 @@
-#include "ofColor.h"
+#include "ofGraphics.h"
+#include "../Interfaces/GenericInterface.h"
 
 class Stuff : public GenericInterface
 {
@@ -12,6 +13,7 @@ void Stuff::update( )
 
 void Stuff::draw( )
 {
+  ofClear( 0 );
 }
 
 // -------------------------------------------------------------

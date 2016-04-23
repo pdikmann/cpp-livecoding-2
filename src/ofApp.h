@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "DynamicLibs/DynamicLibs.h"
 
 class ofApp : public ofBaseApp{
 

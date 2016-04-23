@@ -12,6 +12,7 @@ void signalHandler( int sig ) {
 void DynamicLibs::setup() {
     std::signal( SIGINT, signalHandler ); // register signal handler
     // loadLibs();
+    stuff = static_cast< DynamicBinding< GenericInterface > >( loadLib( ofFile("Stuff.so")));
 }
 
 void DynamicLibs::update() {
@@ -21,23 +22,21 @@ void DynamicLibs::update() {
     }
 }
 
-bool DynamicLibs::loadLib( ofFile file ) {
+DynamicBinding< void > & DynamicLibs::loadLib( ofFile file )
+{
     // ofFile file = std::filesystem::path( apath );
-    std::string name = file.getBaseName();
-    std::string path = file.getAbsolutePath();
+    std::string name = file.getBaseName( );
+    std::string path = file.getAbsolutePath( );
     ofLogNotice( "DynamicLibs" ) << "Looking for dynamic library " << name;
-    DynamicBinding binding;
+    DynamicBinding< void > binding;
     binding.handle = nullptr;
     binding.object = nullptr;
     bool ok = bindLib( name, path, binding );
-    if( ok ) {
-        libs.insert( std::pair< std::string, DynamicBinding >( name, binding ) );
-        // aplay.bind( libs.at( name ) );
+    if ( ok )
+    {
+        libs.insert( std::pair< std::string, DynamicBinding< void > >( name, binding ) );
     }
-    ofLog() << "Testing";
-    binding.object->isPlaying();
-    ofLog() << "Testing ok";
-    return ok;
+    return libs.at( name );
 }
 
 void DynamicLibs::loadLibs() {
@@ -58,7 +57,7 @@ void DynamicLibs::swapLib( std::string name ) {
         ofLogError( "DynamicLibs" ) << "no such library loaded: " << name;
         return;
     }
-    DynamicBinding & binding = ( *it ).second;
+    DynamicBinding< void > & binding = ( *it ).second;
     // reload library
     bool ok = bindLib( binding.name,
                        binding.path,
@@ -69,7 +68,7 @@ void DynamicLibs::swapLib( std::string name ) {
 void DynamicLibs::swapLibs() {
     ofLogVerbose( "DynamicLibs" ) << "Hot-swapping all libraries...";
     for( auto it = libs.begin(); it != libs.end(); ++it ) {
-        DynamicBinding & binding = ( *it ).second;
+        DynamicBinding< void >& binding = ( *it ).second;
         // reload library
         bool ok = bindLib( binding.name,
                            binding.path,
@@ -78,24 +77,24 @@ void DynamicLibs::swapLibs() {
     }
 }
 
-// AnimationPlayer & DynamicLibs::getAnimationPlayer() {
-//     return aplay;
-// }
-
-bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding & out ) {
+bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding< void >& out )
+{
     // destroy old object
-    if( out.object != nullptr ) {
+    if ( out.object != nullptr )
+    {
         ofLogVerbose( "DynamicLibs" ) << "destroying " << out.object << " ...";
         out.destroy( out.object );
         out.object = nullptr;
     }
     // closing
-    if( out.handle != nullptr ) {
+    if ( out.handle != nullptr )
+    {
         ofLogVerbose( "DynamicLibs" ) << "closing " << out.name << " ...";
         int retval = dlclose( out.handle );
-        if( retval != 0 ) {
+        if ( retval != 0 )
+        {
             ofLogError( "DynamicLibs" ) << "failed to close lib " << out.name;
-            ofLogError( "DynamicLibs" ) << dlerror();
+            ofLogError( "DynamicLibs" ) << dlerror( );
             return false;
         }
         out.handle = nullptr;
@@ -104,22 +103,24 @@ bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding & 
     ofLogVerbose( "DynamicLibs" ) << "opening lib " << name << " ...";
     out.name = name;
     out.path = path;
-    out.handle = dlopen( path.c_str(), RTLD_LAZY );
-    if( out.handle == nullptr ) {
+    out.handle = dlopen( path.c_str( ), RTLD_LAZY );
+    if ( out.handle == nullptr )
+    {
         ofLogError( "DynamicLibs" ) << "failed to open lib " << name << " at " << path;
-        ofLogError( "DynamicLibs" ) << dlerror();
+        ofLogError( "DynamicLibs" ) << dlerror( );
         return false;
     }
     // binding
-    out.create = ( AnimationPlayerInterface*( * )() ) dlsym( out.handle, "create" );
-    out.destroy = ( void( * )( AnimationPlayerInterface * ) ) dlsym( out.handle, "destroy" );
-    if( ( out.create == nullptr ) || ( out.destroy == nullptr ) ) {
+    out.create = (void * (*)( ))dlsym( out.handle, "create" );
+    out.destroy = (void (*)( void* ))dlsym( out.handle, "destroy" );
+    if ( ( out.create == nullptr ) || ( out.destroy == nullptr ) )
+    {
         ofLogError( "DynamicLibs" ) << "failed to bind symbols for " << name << " at " << path;
-        ofLogError( "DynamicLibs" ) << dlerror();
+        ofLogError( "DynamicLibs" ) << dlerror( );
         return false;
     }
     // object creation
-    out.object = out.create();
+    out.object = out.create( );
     ofLogVerbose( "DynamicLibs" ) << "creating object " << out.object << " ...";
     ofLogVerbose( "DynamicLibs" ) << "opened lib " << name << " OK!";
     return true;
