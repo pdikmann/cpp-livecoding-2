@@ -1,15 +1,32 @@
-# set -v
-
-# ToDo: commandline options -f --force and -o --once
+function help () {
+    echo
+    echo "$0"
+    echo "        compiles a set of sourcefiles into shared/dynamic libraries."
+    echo "        tries to be smart and only compiles files that have recently changed;"
+    echo "        continues doing so until stopped."
+    echo "        supposedly used with openFrameworks to facilitate livecoding."
+    echo "        edit this script to adjust it to your project setup!"
+    echo
+    echo "Command Line Options:"
+    echo " -h, --help"
+    echo "        print this help."
+    echo " -f, --force"
+    echo "        force compilation even when timestamps are old."
+    echo "        resumes normal behavior after first loop."
+    echo " -o, --once"
+    echo "        only run the loop once."
+    echo
+    exit 0
+}
 
 # ------------------------------------------------------------
 # User Configuration
-pd_timestamp_file="$0"               # the file to compare for timestamps (this file by default)
 pd_oF_dir=../../..                   # oF root directory
 pd_oF_process_name=double-dragon     # the name of your project
 pd_source_dir=./src/DynamicLibs/Libs # the directory containing the library sources
 pd_target_dir=./bin/data/            # the directory to put the compiled libraries in
 pd_timeout=2                         # interval (in seconds) to check for changed timestamps
+pd_timestamp_file="$0"               # the file to compare for timestamps (this file by default)
 # ------------------------------------------------------------
 # Internal (hands off!)
 case $(uname)
@@ -32,38 +49,6 @@ pd_renew_timestamp=0
 pd_opt_force=0
 pd_opt_once=0
 pd_find_only_newer="-newer $pd_timestamp_file"
-
-# echo "Usage:"
-# echo " -f, --force"
-# echo "        force compilation even when timestamps are old"
-# echo " -o, --once"
-# echo "        don't loop forever"
-
-while [ $# -gt 0 ]
-do
-    case $1 in
-        -h|--help)
-            echo helping ...
-            ;;
-        -f|--force)
-            echo forcing ...
-            pd_opt_force=1
-            shift 1
-            ;;
-        -o|--once)
-            echo only once ...
-            pd_opt_once=1
-            shift 1
-            ;;
-        *)
-            shift 1
-            ;;
-    esac
-done
-
-echo "Continuously compiling files in $pd_source_dir to $pd_target_dir"
-echo "Press any key to stop ..."
-echo 
 
 function pd_compile_fast () {
     # compile without oF-headers (faster)
@@ -98,11 +83,37 @@ function pd_validate_name () {
     return $?
 }
 
+# check for commandline options
+while [ $# -gt 0 ]
+do
+    case $1 in
+        -h|--help)
+            help
+            ;;
+        -f|--force)
+            echo forcing compilation regardless of timestamp
+            pd_opt_force=1
+            shift 1
+            ;;
+        -o|--once)
+            echo running only once
+            pd_opt_once=1
+            shift 1
+            ;;
+        *)
+            shift 1
+            ;;
+    esac
+done
+
 # loop forever:
 # compile recently changed files,
 # check for errors,
 # signal app on success
 # 
+echo "compiling files in $pd_source_dir to $pd_target_dir"
+echo "press any key to stop ..."
+echo 
 while true :
 do
     # init
