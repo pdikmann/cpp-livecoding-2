@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include "Interfaces/AnimationPlayerInterface.h"
 
 template< typename Interface >
 struct DynamicBinding {

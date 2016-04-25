@@ -10,15 +10,6 @@ void signalHandler( int sig )
     DynamicLibs::sigSwap = 1;
 }
 
-void DynamicLibs::castLibs( )
-{
-    // cast member variables into action
-    // (make sure these are loaded)
-    // stuff = static_cast< DynamicBinding< GenericInterface > >( libs.at( "Stuff" ) ).object;
-    stuff = static_cast< GenericInterface* >( libs.at( "Stuff" ).object );
-    cam = static_cast< CameraInterface* >( libs.at( "Camera" ).object );
-}
-
 void DynamicLibs::setup( )
 {
     std::signal( SIGINT, signalHandler );  // register signal handler

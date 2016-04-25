@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "DynamicLibs/DynamicLibs.h"
+#include "DynamicLibs/MyLibs.h"
 
 class ofApp : public ofBaseApp
 {
@@ -22,5 +22,5 @@ public:
     void dragEvent( ofDragInfo dragInfo );
     void gotMessage( ofMessage msg );
 
-    DynamicLibs libs;
+    MyLibs libs;
 };

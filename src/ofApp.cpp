@@ -20,8 +20,6 @@ void ofApp::draw( )
     // center = ofVec3f( 0, 0, 0 );
     libs.cam->begin( );
     libs.stuff->draw( );
-    ofSetColor( 255, 0, 0 );
-    ofDrawBox( 1, 1, 1 );
     libs.cam->end( );
 }
 

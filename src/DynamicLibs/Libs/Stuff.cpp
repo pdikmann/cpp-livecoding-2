@@ -1,4 +1,5 @@
 #include "ofGraphics.h"
+#include "of3dGraphics.h"
 #include "../Interfaces/GenericInterface.h"
 
 class Stuff : public GenericInterface
@@ -14,6 +15,8 @@ void Stuff::update( )
 void Stuff::draw( )
 {
     ofClear( 0 );
+    ofSetColor( 255, 0, 0 );
+    ofDrawBox( 1, 1, 1 );
 }
 
 // -------------------------------------------------------------
