@@ -4,18 +4,23 @@
 
 class Stuff : public GenericInterface
 {
+public:
     void update( );
     void draw( );
+private:
+    float counter;
 };
 
 void Stuff::update( )
 {
+    counter += .2f;
 }
 
 void Stuff::draw( )
 {
     ofClear( 0 );
     ofSetColor( 255, 0, 0 );
+    ofRotateZ( counter );
     ofDrawBox( 1, 1, 1 );
 }
 

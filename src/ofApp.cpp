@@ -4,12 +4,15 @@
 void ofApp::setup( )
 {
     // ofSetLogLevel( "DynamicLibs", OF_LOG_VERBOSE );
+    // ofSetLogLevel( "MyLibs", OF_LOG_VERBOSE );
+    // ofSetLogLevel( "ofApp", OF_LOG_VERBOSE );
     libs.setup( );
 }
 
 //--------------------------------------------------------------
 void ofApp::update( )
 {
+    ofLogVerbose( "ofApp" ) << "updating";
     libs.update( );
     libs.stuff->update( );
 }
@@ -17,7 +20,7 @@ void ofApp::update( )
 //--------------------------------------------------------------
 void ofApp::draw( )
 {
-    // center = ofVec3f( 0, 0, 0 );
+    ofLogVerbose( "ofApp" ) << "drawing";
     libs.cam->begin( );
     libs.stuff->draw( );
     libs.cam->end( );

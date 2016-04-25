@@ -1,21 +1,23 @@
 #pragma once
 
 #include "DynamicLibs.h"
+// project-specific interfaces used for communication with your libraries
 #include "Interfaces/GenericInterface.h"
 #include "Interfaces/CameraInterface.h"
 
 class MyLibs : public DynamicLibs
 {
 public:
-    // project-specific libs
+    // pointers to the objects (implementing your interfaces) obtained from your libraries
     GenericInterface* stuff;
     CameraInterface* cam;
 
 private:
     void castLibs( )
     {
-        // cast member variables into action
-        stuff = static_cast< GenericInterface* >( libs.at( "Stuff"  ).object );
-        cam   = static_cast< CameraInterface*  >( libs.at( "Camera" ).object );
+        // cast objects into action
+        // use library filenames, e.g. Stuff.so -> "Stuff"
+        castLib( "Stuff", stuff );
+        castLib( "Camera", cam );
     }
 };
