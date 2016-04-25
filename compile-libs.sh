@@ -141,14 +141,14 @@ do
         tput sgr0
 
         # check wether any of-sources are included
-        pd_check_for_of_headers $source_file
-        if [ $? -eq 0 ]
-        then
-            pd_compile_elaborate $source_file $target_file
-        else
-            pd_compile_elaborate $source_file $target_file
-            # pd_compile_fast $source_file $target_file
-        fi
+        # pd_check_for_of_headers $source_file
+        # if [ $? -eq 0 ]
+        # then
+        #     pd_compile_elaborate $source_file $target_file
+        # else
+        #     pd_compile_fast $source_file $target_file
+        # fi
+        pd_compile_elaborate $source_file $target_file
         # check compilation result
         if [ $? -eq 0 ] 
         then 
