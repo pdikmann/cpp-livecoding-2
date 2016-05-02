@@ -7,6 +7,7 @@ volatile std::sig_atomic_t DynamicLibs::sigSwap;
 
 void signalHandler( int sig )
 {
+    ofLogNotice( "DynamicLibs" ) << "Signal handled!";
     DynamicLibs::sigSwap = 1;
 }
 
@@ -21,6 +22,7 @@ void DynamicLibs::update( )
 {
     if ( sigSwap == 1 )
     {
+        ofLogNotice( "DynamicLibs" ) << "Swapping libs";
         sigSwap = 0;
         swapLibs( );
         castLibs( );

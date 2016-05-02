@@ -5,11 +5,15 @@
 class Stuff : public GenericInterface
 {
 public:
+    Stuff();
     void update( );
     void draw( );
 private:
     float counter;
 };
+
+Stuff::Stuff()
+  : counter( 0 ){}
 
 void Stuff::update( )
 {
@@ -19,7 +23,7 @@ void Stuff::update( )
 void Stuff::draw( )
 {
     ofClear( 0 );
-    ofSetColor( 255, 0, 0 );
+    ofSetColor( 0, 255, 0 );
     ofRotateZ( counter );
     ofDrawBox( 1, 1, 1 );
 }

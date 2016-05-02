@@ -3,8 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup( )
 {
-    // ofSetLogLevel( "DynamicLibs", OF_LOG_VERBOSE );
-    // ofSetLogLevel( "MyLibs", OF_LOG_VERBOSE );
+    ofSetLogLevel( "DynamicLibs", OF_LOG_VERBOSE );
+    ofSetLogLevel( "MyLibs", OF_LOG_VERBOSE );
     // ofSetLogLevel( "ofApp", OF_LOG_VERBOSE );
     libs.setup( );
 }
