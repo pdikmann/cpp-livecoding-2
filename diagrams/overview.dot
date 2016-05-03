@@ -1,0 +1,57 @@
+digraph G {
+  compound=true;
+  // splines=line;
+  subgraph clusterApp {
+    label="ofApp";
+    openFrameworks[shape=box];
+    MyLibs[shape=record,label="<r>MyLibs|{<0>*stuff|<1>*cam}"];
+    DynamicLibs[shape=box];
+  }
+  subgraph clusteroFHeaders {
+    label="../../../libs/openFrameworks/";
+    fontcolor=steelblue;
+    color=steelblue;
+    //style=dotted;
+    oFHeaders[label="oF Headers",shape=plaintext,style=filled,fillcolor=grey90];
+  }
+  subgraph clusterIFs {
+    label="src/DynamicLibs/Interfaces";
+    fontcolor=steelblue;
+    color=steelblue;
+    //style=dotted;
+    //style=dashed;
+    GeneralInterface[label="GeneralInterface.h",shape=plaintext,style=filled,fillcolor=grey90];
+    CameraInterface[label="CameraInterface.h",shape=plaintext,style=filled,fillcolor=grey90];
+  }
+  subgraph clusterLibs {
+    label="src/DynamicLibs/Libraries";
+    fontcolor=steelblue;
+    color=steelblue;
+    //style=dotted;
+    //style=dashed;
+    Stuff[label="Stuff.cpp",shape=plaintext,style=filled,fillcolor=grey90];
+    Camera[label="Camera.cpp",shape=plaintext,style=filled,fillcolor=grey90];
+  }
+  subgraph clusterData {
+    label="bin/data"
+    fontcolor=steelblue;
+    color=steelblue;
+    //style=dotted;
+    StuffL[label="Stuff.dylib",shape=octagon];
+    CameraL[label="Camera.dylib",shape=octagon];
+  }
+  MyLibs -> DynamicLibs [label="derives"];
+  DynamicLibs -> StuffL [label="loads &\nlinks"];
+  MyLibs:0 -> GeneralInterface [fontcolor=goldenrod,color=goldenrod];
+  // MyLibs:0 -> GeneralInterface [label="*",fontcolor="goldenrod"];
+  // MyLibs:1 -> CameraInterface [label="*",fontcolor="goldenrod"];
+  //
+  Stuff -> GeneralInterface [fontcolor=goldenrod,color=goldenrod];
+  // Camera -> CameraInterface [label="#include",fontcolor=goldenrod];
+  Stuff -> oFHeaders [lhead=clusteroFHeaders,fontcolor=goldenrod,color=goldenrod];
+  Stuff -> StuffL[label="compiled\nto",fontcolor=steelblue,color=steelblue];
+  // Camera -> CameraL[label="compiles to",fontcolor=red];
+  //
+  openFrameworks -> oFHeaders [lhead=clusteroFHeaders,label="#include",fontcolor=goldenrod,color=goldenrod];
+  openFrameworks -> MyLibs [label="calls"];
+}
