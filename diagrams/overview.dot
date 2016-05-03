@@ -2,13 +2,13 @@ digraph G {
   compound=true;
   // splines=line;
   subgraph clusterApp {
-    label="ofApp";
+    label="Application";
     openFrameworks[shape=box];
     MyLibs[shape=record,label="<r>MyLibs|{<0>*stuff|<1>*cam}"];
     DynamicLibs[shape=box];
   }
   subgraph clusteroFHeaders {
-    label="../../../libs/openFrameworks/";
+    label="../../../libs/openFrameworks";
     fontcolor=steelblue;
     color=steelblue;
     //style=dotted;
@@ -40,8 +40,10 @@ digraph G {
     StuffL[label="Stuff.dylib",shape=octagon];
     CameraL[label="Camera.dylib",shape=octagon];
   }
-  MyLibs -> DynamicLibs [label="derives"];
-  DynamicLibs -> StuffL [label="loads &\nlinks"];
+  CompileScript [label="compile-libs.sh",shape=plaintext,style=filled,fillcolor=steelblue,fontcolor=white];
+  // links
+  MyLibs -> DynamicLibs [label="derive"];
+  DynamicLibs -> StuffL [label="load & link"];
   MyLibs:0 -> GeneralInterface [fontcolor=goldenrod,color=goldenrod];
   // MyLibs:0 -> GeneralInterface [label="*",fontcolor="goldenrod"];
   // MyLibs:1 -> CameraInterface [label="*",fontcolor="goldenrod"];
@@ -49,9 +51,11 @@ digraph G {
   Stuff -> GeneralInterface [fontcolor=goldenrod,color=goldenrod];
   // Camera -> CameraInterface [label="#include",fontcolor=goldenrod];
   Stuff -> oFHeaders [lhead=clusteroFHeaders,fontcolor=goldenrod,color=goldenrod];
-  Stuff -> StuffL[label="compiled\nto",fontcolor=steelblue,color=steelblue];
+  //Stuff -> StuffL[label="compiled\nto",fontcolor=steelblue,color=steelblue];
+  Stuff -> CompileScript [ltail=clusterLibs,fontcolor=steelblue,color=steelblue];
+  CompileScript -> StuffL [lhead=clusterData,fontcolor=steelblue,color=steelblue,label="continuous\ncompilation"];
   // Camera -> CameraL[label="compiles to",fontcolor=red];
   //
   openFrameworks -> oFHeaders [lhead=clusteroFHeaders,label="#include",fontcolor=goldenrod,color=goldenrod];
-  openFrameworks -> MyLibs [label="calls"];
+  openFrameworks -> MyLibs [label="call"];
 }
