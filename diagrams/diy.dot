@@ -4,7 +4,7 @@ digraph G {
   subgraph clusterApp {
     label="Application";
     openFrameworks[shape=box];
-    MyLibs[shape=record,label="<r>MyLibs|{<0>*stuff|<1>*cam}"];
+    MyLibs[shape=record,label="<r>MyLibs|{<0>*stuff|<1>*cam|<3>*yours}"];
     DynamicLibs[shape=box];
   }
   subgraph clusteroFHeaders {
@@ -20,6 +20,7 @@ digraph G {
     color=steelblue;
     //style=dotted;
     //style=dashed;
+    YourInterface[label="YourInterface.h",shape=box,style="dashed",color=grey70];
     GeneralInterface[label="GeneralInterface.h",shape=plaintext,style=filled,fillcolor=grey90];
     CameraInterface[label="CameraInterface.h",shape=plaintext,style=filled,fillcolor=grey90];
   }
@@ -29,6 +30,7 @@ digraph G {
     color=steelblue;
     //style=dotted;
     //style=dashed;
+    Yours[label="Yours.cpp",shape=box,style="dashed",color=grey70];
     Stuff[label="Stuff.cpp",shape=plaintext,style=filled,fillcolor=grey90];
     Camera[label="Camera.cpp",shape=plaintext,style=filled,fillcolor=grey90];
   }
@@ -37,23 +39,24 @@ digraph G {
     fontcolor=steelblue;
     color=steelblue;
     //style=dotted;
+    YoursL[label="Yours.dylib",style=dashed,shape=octagon];
     StuffL[label="Stuff.dylib",shape=octagon];
     CameraL[label="Camera.dylib",shape=octagon];
   }
   CompileScript [label="compile-libs.sh",shape=plaintext,style=filled,fillcolor=steelblue,fontcolor=white];
   // links
   MyLibs -> DynamicLibs [label="derive"];
-  DynamicLibs -> StuffL [label="load & link"];
-  MyLibs:0 -> GeneralInterface [fontcolor=goldenrod,color=goldenrod];
+  DynamicLibs -> YoursL [label="load & link"];
+  MyLibs:3 -> YourInterface [fontcolor=goldenrod,color=goldenrod];
   // MyLibs:0 -> GeneralInterface [label="*",fontcolor="goldenrod"];
   // MyLibs:1 -> CameraInterface [label="*",fontcolor="goldenrod"];
   //
-  Stuff -> GeneralInterface [fontcolor=goldenrod,color=goldenrod];
+  Yours -> YourInterface [fontcolor=goldenrod,color=goldenrod];
   // Camera -> CameraInterface [label="#include",fontcolor=goldenrod];
-  Stuff -> oFHeaders [lhead=clusteroFHeaders,fontcolor=goldenrod,color=goldenrod];
+  Yours -> oFHeaders [lhead=clusteroFHeaders,fontcolor=goldenrod,color=goldenrod];
   //Stuff -> StuffL[label="compiled\nto",fontcolor=steelblue,color=steelblue];
-  Stuff -> CompileScript [ltail=clusterLibs,fontcolor=steelblue,color=steelblue];
-  CompileScript -> StuffL [lhead=clusterData,fontcolor=steelblue,color=steelblue,label="continuous\ncompilation"];
+  Yours -> CompileScript [ltail=clusterLibs,fontcolor=steelblue,color=steelblue];
+  CompileScript -> YoursL [lhead=clusterData,fontcolor=steelblue,color=steelblue,label="continuous\ncompilation"];
   // Camera -> CameraL[label="compiles to",fontcolor=red];
   //
   openFrameworks -> oFHeaders [lhead=clusteroFHeaders,ltail=clusterApp,label="#include",fontcolor=goldenrod,color=goldenrod];
