@@ -25,7 +25,7 @@ pd_oF_dir=../../..                   # oF root directory
 pd_oF_process_name=cpp-livecoding-2  # the name of your project
 pd_source_dir=./src/DynamicLibs/Libs # the directory containing the library sources
 pd_target_dir=./bin/data             # the directory to put the compiled libraries in
-pd_timeout=2                         # interval (in seconds) to check for changed timestamps
+pd_timeout=1                         # interval (in seconds) to check for changed timestamps
 pd_timestamp_file="$0"               # the file to compare for timestamps (this file by default)
 # ------------------------------------------------------------
 # Internal (hands off!)

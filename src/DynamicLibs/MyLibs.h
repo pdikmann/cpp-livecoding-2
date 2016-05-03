@@ -13,7 +13,7 @@ public:
     CameraInterface* cam;
 
 private:
-    void castLibs( )
+    void initLibs( )
     {
         // cast objects into action
         // use library filenames, e.g. Stuff.so -> "Stuff"

@@ -15,17 +15,18 @@ void DynamicLibs::setup( )
 {
     std::signal( SIGINT, signalHandler );  // register signal handler
     loadLibs( );
-    castLibs( );
+    initLibs( );
+    ofAddListener( ofEvents().update, this, &DynamicLibs::update, OF_EVENT_ORDER_BEFORE_APP );
 }
 
-void DynamicLibs::update( )
+void DynamicLibs::update( ofEventArgs & eargs )
 {
     if ( sigSwap == 1 )
     {
         ofLogNotice( "DynamicLibs" ) << "Swapping libs";
         sigSwap = 0;
         swapLibs( );
-        castLibs( );
+        initLibs( );
     }
 }
 

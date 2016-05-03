@@ -5,7 +5,7 @@ void ofApp::setup( )
 {
     ofSetLogLevel( "DynamicLibs", OF_LOG_VERBOSE );
     ofSetLogLevel( "MyLibs", OF_LOG_VERBOSE );
-    // ofSetLogLevel( "ofApp", OF_LOG_VERBOSE );
+    ofSetLogLevel( "ofApp", OF_LOG_ERROR );
     libs.setup( );
 }
 
@@ -13,7 +13,6 @@ void ofApp::setup( )
 void ofApp::update( )
 {
     ofLogVerbose( "ofApp" ) << "updating";
-    libs.update( );
     libs.stuff->update( );
 }
 

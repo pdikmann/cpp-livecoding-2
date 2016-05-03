@@ -23,9 +23,14 @@ void Stuff::update( )
 void Stuff::draw( )
 {
     ofClear( 0 );
-    ofSetColor( 0, 255, 0 );
+    ofPushStyle();
+    //ofNoFill();
+    //ofFill();
+    ofSetColor( 255, 0, 0 );
     ofRotateZ( counter );
     ofDrawBox( 1, 1, 1 );
+    //ofDrawSphere( 0.5 );
+    ofPopStyle();
 }
 
 // -------------------------------------------------------------
