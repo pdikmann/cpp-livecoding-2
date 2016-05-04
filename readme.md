@@ -27,7 +27,9 @@ peek at `diagrams/diy.svg` to add your own libraries:
 
 # Details
 
-- `src/DynamicLibs/Libraries` is excluded from compilation inside `config.make`
-- to make this run on Linux, you will need to recompile oF with the `-fPIC` compiler flag.
+- `src/DynamicLibs/Libraries` needs to be excluded from compilation inside `config.make`
+- to make this run on Linux, you will need to recompile oF with the `-fPIC` compiler flag;
+  apply the `0001-add-fPIC-flag-to-compile.core.mk.patch` to the openFrameworks-repository to set the flag,
+  then `make clean` and `make` your openFrameworks (from inside `libs/openFrameworksCompiled/project`)
   
 

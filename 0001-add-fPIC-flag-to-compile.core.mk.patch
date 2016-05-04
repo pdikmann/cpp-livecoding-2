@@ -1,0 +1,25 @@
+From c2fec1f026eca0dcfc8315006c0fb8fc5a3dd399 Mon Sep 17 00:00:00 2001
+From: Philipp Dikmann <mail@philippdikmann.de>
+Date: Sat, 16 Apr 2016 19:37:07 +0200
+Subject: [PATCH] add -fPIC flag to compile.core.mk
+
+---
+ libs/openFrameworksCompiled/project/makefileCommon/compile.core.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libs/openFrameworksCompiled/project/makefileCommon/compile.core.mk b/libs/openFrameworksCompiled/project/makefileCommon/compile.core.mk
+index af4f385..0883e09 100644
+--- a/libs/openFrameworksCompiled/project/makefileCommon/compile.core.mk
++++ b/libs/openFrameworksCompiled/project/makefileCommon/compile.core.mk
+@@ -238,7 +238,7 @@ $(OF_CORE_OBJ_OUTPUT_PATH).compiler_flags: force
+ $(OF_CORE_OBJ_OUTPUT_PATH)%.o: $(OF_ROOT)/%.cpp $(OF_CORE_OBJ_OUTPUT_PATH).compiler_flags
+ 	@echo "Compiling" $<
+ 	@mkdir -p $(@D)
+-	$(CXX) $(OPTIMIZATION_CFLAGS) $(CFLAGS) $(CXXFLAGS) -MMD -MP -MF $(OF_CORE_OBJ_OUTPUT_PATH)$*.d -MT$(OF_CORE_OBJ_OUTPUT_PATH)$*.o -o $@ -c $<
++	$(CXX) -fPIC $(OPTIMIZATION_CFLAGS) $(CFLAGS) $(CXXFLAGS) -MMD -MP -MF $(OF_CORE_OBJ_OUTPUT_PATH)$*.d -MT$(OF_CORE_OBJ_OUTPUT_PATH)$*.o -o $@ -c $<
+ 
+ $(OF_CORE_OBJ_OUTPUT_PATH)%.o: $(OF_ROOT)/%.mm $(OF_CORE_OBJ_OUTPUT_PATH).compiler_flags
+ 	@echo "Compiling" $<
+-- 
+2.1.4
+
