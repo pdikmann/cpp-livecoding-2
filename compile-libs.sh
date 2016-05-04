@@ -105,6 +105,7 @@ do
             ;;
     esac
 done
+echo "run $0 -h to see all available command-line options"
 
 # loop forever:
 # compile recently changed files,
