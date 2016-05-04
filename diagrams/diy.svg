@@ -23,7 +23,7 @@
 </g>
 <g id="clust4" class="cluster"><title>clusterLibs</title>
 <polygon fill="none" stroke="steelblue" points="372,-250 372,-324 647,-324 647,-250 372,-250"/>
-<text text-anchor="middle" x="509.5" y="-308.8" font-family="Times,serif" font-size="14.00" fill="steelblue">src/DynamicLibs/Libraries</text>
+<text text-anchor="middle" x="509.5" y="-308.8" font-family="Times,serif" font-size="14.00" fill="steelblue">src/DynamicLibs/Libs</text>
 </g>
 <g id="clust5" class="cluster"><title>clusterData</title>
 <polygon fill="none" stroke="steelblue" points="55,-8 55,-82 447,-82 447,-8 55,-8"/>

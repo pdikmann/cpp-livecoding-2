@@ -24,7 +24,7 @@ digraph G {
     CameraInterface[label="CameraInterface.h",shape=plaintext,style=filled,fillcolor=grey90];
   }
   subgraph clusterLibs {
-    label="src/DynamicLibs/Libraries";
+    label="src/DynamicLibs/Libs";
     fontcolor=steelblue;
     color=steelblue;
     //style=dotted;
