@@ -5,7 +5,12 @@ function help () {
     echo "        tries to be smart and only compiles files that have recently changed;"
     echo "        continues doing so until stopped."
     echo "        supposedly used with openFrameworks to facilitate livecoding."
+    echo
     echo "        edit this script to adjust it to your project setup!"
+    echo
+    echo "        nota bene:"
+    echo "        this script assumes any linux is 64-bit, using gcc"
+    echo "        and any mac os is using clang."
     echo
     echo "Command Line Options:"
     echo " -h, --help"
@@ -32,13 +37,16 @@ pd_timestamp_file="$0"               # the file to compare for timestamps (this 
 case $(uname)
 in
     Linux)
+        # assumes 64-bit linux
         pd_os=linux64 
         pd_lib_extension=so
+        # assumes gcc
         pd_cpp_call="g++ -fPIC -shared"
         ;;
     Darwin*)
         pd_os=osx
         pd_lib_extension=dylib
+	# assumes clang
         pd_cpp_call="g++ -dynamiclib -flat_namespace -undefined dynamic_lookup"
         ;;
 esac
