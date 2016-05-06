@@ -27,6 +27,7 @@ peek at `diagrams/diy.svg` to add your own libraries:
 
 # Details
 
+- the `compile-libs.sh` script assumes either a 64-bit linux running `gcc` (tested with 4.9.2) or mac os x (tested on 10.11) running `clang`.
 - `src/DynamicLibs/Libs` needs to be excluded from compilation inside `config.make`
 - to make this run on Linux, you will need to recompile oF with the `-fPIC` compiler flag;
   apply the `0001-add-fPIC-flag-to-compile.core.mk.patch` to the openFrameworks-repository to set the flag,
