@@ -7,7 +7,7 @@ volatile std::sig_atomic_t DynamicLibs::sigSwap;
 
 void signalHandler( int sig )
 {
-    ofLogNotice( "DynamicLibs" ) << "Signal handled!";
+    ofLogVerbose( "DynamicLibs" ) << "Signal handled!";
     DynamicLibs::sigSwap = 1;
 }
 
@@ -23,7 +23,7 @@ void DynamicLibs::update( ofEventArgs & eargs )
 {
     if ( sigSwap == 1 )
     {
-        ofLogNotice( "DynamicLibs" ) << "Swapping libs";
+        ofLogVerbose( "DynamicLibs" ) << "Swapping libs";
         sigSwap = 0;
         swapLibs( );
         initLibs( );
@@ -35,7 +35,7 @@ DynamicBinding< void >& DynamicLibs::loadLib( ofFile file )
     // ofFile file = std::filesystem::path( apath );
     std::string name = file.getBaseName( );
     std::string path = file.getAbsolutePath( );
-    ofLogNotice( "DynamicLibs" ) << "Looking for dynamic library " << name;
+    ofLogVerbose( "DynamicLibs" ) << "Looking for dynamic library " << name;
     DynamicBinding< void > binding;
     binding.handle = nullptr;
     binding.object = nullptr;
@@ -92,8 +92,12 @@ void DynamicLibs::swapLibs( )
 bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding< void >& out )
 {
     // destroy old object
+    void* persistentData = nullptr;
     if ( out.object != nullptr )
     {
+        if( out.getData != nullptr ){
+            persistentData = out.getData( out.object );
+        }
         ofLogVerbose( "DynamicLibs" ) << "destroying " << out.object << " ...";
         out.destroy( out.object );
         out.object = nullptr;
@@ -125,14 +129,23 @@ bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding< v
     // binding
     out.create = (void* (*)( ))dlsym( out.handle, "create" );
     out.destroy = (void (*)( void* ))dlsym( out.handle, "destroy" );
+    out.getData = (void* (*)( void* ))dlsym( out.handle, "getData" );        // optional, can be null
+    out.setData = (void (*)( void*, void* ))dlsym( out.handle, "setData" );  // optional, can be null
     if ( ( out.create == nullptr ) || ( out.destroy == nullptr ) )
     {
-        ofLogError( "DynamicLibs" ) << "failed to bind symbols for " << name << " at " << path;
+        ofLogError( "DynamicLibs" ) << "failed to bind essential symbols for " << name << " at " << path;
         ofLogError( "DynamicLibs" ) << dlerror( );
         return false;
     }
+    if ( ( out.getData == nullptr ) || ( out.setData == nullptr ) ){
+        ofLogNotice( "DynamicLibs" ) << "failed to bind optional symbols for " << name << " at " << path;
+        ofLogNotice( "DynamicLibs" ) << dlerror( );
+    }
     // object creation
     out.object = out.create( );
+    if ( ( out.setData != nullptr ) && ( persistentData != nullptr ) ){
+        out.setData( out.object, persistentData );
+    }
     ofLogVerbose( "DynamicLibs" ) << "creating object " << out.object << " ...";
     ofLogVerbose( "DynamicLibs" ) << "opened lib " << name << " OK!";
     return true;

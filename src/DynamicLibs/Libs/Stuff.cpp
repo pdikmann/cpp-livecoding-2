@@ -5,6 +5,10 @@
 #include "../Interfaces/GenericInterface.h"
 #include "../Interfaces/CameraInterface.h"
 
+struct Data {
+    float counter;
+};
+
 class Stuff : public GenericInterface {
   public:
     Stuff();
@@ -13,21 +17,23 @@ class Stuff : public GenericInterface {
     void linkCamLib( CameraInterface * aCamLib ) {
         camLib = aCamLib;
     }
+    Data data;
 
   private:
-    float counter;
     CameraInterface * camLib;
 };
 
 Stuff::Stuff()
-    : counter( 0 ) {}
+{
+    data.counter = 0;
+}
 
 void Stuff::update( ) {
-    counter += .2f;
-    ( counter >= 90 ) && ( counter -= 90 );
+    data.counter += .2f;
+    ( data.counter >= 90 ) && ( data.counter -= 90 );
     // roll camera
     ofVec3f camOrientation = camLib->cam.getOrientationEuler();
-    camOrientation.z = sin( counter / 90.f * 2 * PI ) * 30;
+    camOrientation.z = sin( data.counter / 90.f * 2 * PI ) * 30;
     camLib->cam.setOrientation( camOrientation );
 }
 
@@ -39,7 +45,7 @@ void Stuff::draw( ) {
     ofNoFill();
     //ofFill();
     ofSetColor( 255, 0, 0 );
-    ofRotateZ( counter );
+    ofRotateZ( data.counter );
     ofDrawBox( 1, 1, 1 );
     //ofDrawSphere( 0.5 );
     ofPopStyle();
@@ -53,6 +59,15 @@ extern "C" {
     void destroy( Stuff * obj ) {
         delete ( obj );
     }
+    void* getData( Stuff* obj )
+    {
+        Data* data = new Data;
+        *data = obj->data;
+        return (void*)data;
+    }
+    void setData( Stuff* obj, void* data )
+    {
+        obj->data = *( (Data*)data );
+        delete ( (Data*)data );
+    }
 }
-
-
