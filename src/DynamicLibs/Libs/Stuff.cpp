@@ -27,7 +27,7 @@ void Stuff::update( ) {
     ( counter >= 90 ) && ( counter -= 90 );
     // roll camera
     ofVec3f camOrientation = camLib->cam.getOrientationEuler();
-    camOrientation.z = sin( counter / 90.f * 2 * pi ) * 30;
+    camOrientation.z = sin( counter / 90.f * 2 * PI ) * 30;
     camLib->cam.setOrientation( camOrientation );
 }
 
