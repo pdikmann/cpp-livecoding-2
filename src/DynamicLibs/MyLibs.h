@@ -20,6 +20,6 @@ private:
         // use library filenames, e.g. Stuff.so -> "Stuff"
         castLib( "Stuff", stuff );
         castLib( "Camera", cam );
-        stuff->linkCamLib( cam );
+        stuff->linkCamLib( cam ); // at this point, `stuff` is fully usable and can be called according to its interface.
     }
 };
