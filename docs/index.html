@@ -2,8 +2,56 @@
 <p>This article describes an approach and a setup to integrate live coding - a fast, iterative style of programming - into C++ and the openFrameworks environment. While the environment is traditionally hampered by the constraints of batch programming and long compilation times, this approach significantly reduces the time between writing the code and seeing the result of its execution, facilitating learning and experimentation and leading to increased productivity.</p>
 <h2 id="the-tldr">The TL;DR</h2>
 <p>Instead of compiling all our code into a single monolithic app, we are separating the different components into a set of dynamic, shared libraries that can be compiled separatedly and (re-)loaded into the main app at runtime. We're using a simple shell script that detects changes to our sourcefiles, tries to compile them and signals the main app on success. The main app then uses the (standard BSD- and C-library) <code>&lt;dlfcn.h&gt;</code> and <code>&lt;csignal&gt;</code> headers to work the magic.</p>
-<p>You can read up on the basics of dynamic libraries in the following paragraphs, or jump straight to the conclusions on <a href="#usage">how to use the example code</a> and <a href="#adapt">how to adapt it to your needs</a>.</p>
-<h2 id="how-dynamic-libraries-work">How dynamic libraries work</h2>
+<p>You can jump straight into <a href="#use">trying out the example code</a> and <a href="#adapt">adapting it to your needs</a> in the following paragraphs, or read up on <a href="#explain">the basics of dynamic libraries</a> first.</p>
+<h2 id="use">Running the code</h2>
+<p>On Mac OS X, you're already good to go. Clone this repo into the <code>openFrameworks/apps/yourapps/cpp-livecoding-2</code> directory, <code>make</code> and <code>make run</code>. Then, in a separate terminal, run <code>./compile-libs.sh</code> to start the continuous background compilation. At this point, you can start editing the <code>src/DynamicLibs/Libs/Stuff.cpp</code> source file and see any saved changes being reflected in your app in real-time (hint: mess with the <code>draw</code> function! :D). If things don't show up, check the output of <code>./compile-libs.sh</code> for compilation errors.</p>
+<p>On Linux, the situation is different: you will probably need to recompile your openFrameworks to use position-independent code. This is done by default on Mac OS for reasons of security and compliance with x86-64 architecture (see <a href="http://stackoverflow.com/questions/7216244/why-is-fpic-absolutely-necessary-on-64-and-not-on-32bit-platforms#7217082">this StackOverflow question</a>); the Makefile for Linux does not make the same assumptions (e.g. because you might not run a 64bit system). But it can be arranged: assuming you have cloned openFrameworks from its github repo, you can apply the provided patch and recompile:</p>
+<pre><code>cp 0001-add-fPIC-flag-to-compile.core.mk.patch ../../..
+cd ../../..
+git apply 0001-add-fPIC-flag-to-compile.core.mk.patch
+cd libs/openFrameworksCompiled/project   
+make clean
+make</code></pre>
+<p>(Tested on <code>commit 374eaa0f7dbdc7e65a7618fa2564b8875473cf39</code>.) After that, continue as described above for Mac OS X.</p>
+<h2 id="adapt">Rolling your own</h2>
+<p>The architecture of this contraption is best summed up in the following picture:</p>
+<figure>
+<img src="../diagrams/overview.png" alt="Architecture overview" /><figcaption>Architecture overview</figcaption>
+</figure>
+<p>All user-serviceable parts are contained within the <code>MyLibs</code> class and the <code>src/DynamicLibs/Libs</code> and <code>/Interfaces</code> directories. Extending this approach for your own needs will looks like this:</p>
+<figure>
+<img src="../diagrams/diy.png" alt="Extending the concept" /><figcaption>Extending the concept</figcaption>
+</figure>
+<p>To add a component for use as a dynamic library, first create a fitting interface. Looking at the example headers in <code>src/DynamicLibs/Interfaces</code>, you'll see that these are purely virtual, meaning: all functions are declared <code>virtual</code> and assigned <code>= 0</code>. This turns the interface class into an abstract class, preventing it from being instantiated and requiring any derived classes to provide implementations to all declared functions - which fits the intended use very nicely.</p>
+<table class="sourceCode cpp numberLines" startFrom="4"><tr class="sourceCode"><td class="lineNumbers"><pre>4
+5
+6
+7
+8
+</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">class</span> GenericInterface {
+<span class="kw">public</span>:
+    <span class="kw">virtual</span> <span class="dt">void</span> update( ) = <span class="dv">0</span>;
+    <span class="kw">virtual</span> <span class="dt">void</span> draw( ) = <span class="dv">0</span>;
+    ...</code></pre></td></tr></table>
+<p>Afterwards, take the three exemplary steps laid out in the <code>MyLibs.h</code> file: <code>#include</code> the new interface, add another public member variable (holding a pointer to the interface type) and set it up with a corresponding line in the <code>initLibs</code> function.</p>
+<p>Last but not least, write the library itself! This comes down to implementing all the functionality promised in the interface class, plus 4 important extras: a set of functions called <code>create</code>, <code>destroy</code>, <code>getData</code> and <code>setData</code>, all of them declared with <code>extern &quot;C&quot;</code> linkage. Scoop their signatures from the example in <code>Stuff.cpp</code>:</p>
+<table class="sourceCode cpp numberLines" startFrom="55"><tr class="sourceCode"><td class="lineNumbers"><pre>55
+56
+57
+58
+59
+60
+</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="dt">extern</span> <span class="st">&quot;C&quot;</span> {
+    Stuff * create( ) { ...  }
+    <span class="dt">void</span> destroy( Stuff * obj ) { ...  }
+    <span class="dt">void</span>* getData( Stuff* obj ) { ... }
+    <span class="dt">void</span> setData( Stuff* obj, <span class="dt">void</span>* data ) { ... }
+}</code></pre></td></tr></table>
+<p>The first two are mandatory and are used to instantiate (and destroy) the new component. Since the main app has no detailed knowledge of the component, it is unable to instatiate it without help from the library; and since the linkage is constrained to C language constructs, these two functions have to do the leg work of calling the respective constructor &amp; destructor.</p>
+<p>The other two are optional and can be used to persist data across reloads of the component. By storing the components' data in a dedicated struct, the main application can take a hold of it, swap out the library for a freshly compiled new version, and put the data back in place afterwards. This works fine for simple structs, but will require additional legwork for more complex / nested structures.</p>
+<h2 id="wrapping-up">Wrapping up</h2>
+<p>And that's it! I hope you ... ???</p>
+<h2 id="explain">How dynamic libraries work</h2>
 <p>Running an executable is straightforward for the operating system: it maps a piece of physical memory to a new instance of virtual memory, copies the executable into it, and starts running the code from the top (the beginning of virtual memory). If the executable allocates memory to store and retrieve values, it is taken from this same instance of virtual memory. When the machine code of the executable references variables and symbols (like the location of particular functions within the executable), these hard-coded references are also resolved in relation to the virtual memory.</p>
 <p>This means that the executable never has to worry about the place it occupies in physical memory: all references are mapped to the virtual memory, with the executable sitting comfortably right at the top, or address 0. (Yes, it is slightly more complicated than that, but humour us for the sake of this explanation.) Most importantly, this means that the compiler building this executable, when writing the machine code, can simply assume that everything is stored in relation to address 0 and just use fixed, absolute numbers to refer to things.</p>
 <p>Loading a dynamic library at runtime poses a challenge, then: since the library code is going to be placed <em>after</em> the executable, it can no longer assume that it sits at the top of virtual memory. In effect, the compiler of the library can no longer write down fixed addresses for all the references, and instead has to produce what is called <a href="https://en.wikipedia.org/wiki/Position-independent_code">position-independent code</a>.</p>
@@ -20,9 +68,7 @@
 6
 7
 8
-9
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">class</span> GenericInterface
-{
+</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">class</span> GenericInterface {
 <span class="kw">public</span>:
     <span class="kw">virtual</span> <span class="dt">void</span> update( ) = <span class="dv">0</span>;
     <span class="kw">virtual</span> <span class="dt">void</span> draw( ) = <span class="dv">0</span>;
@@ -48,53 +94,3 @@
     }
     ...</code></pre></td></tr></table>
 <p>Instead of exposing every single function that is written in the library, we are providing the <code>create</code> and <code>destroy</code> functions to pass an object of type <code>Stuff</code> (implementing the <code>GenericInterface</code>). Since both the app and the library agreed on the interface for this object (aka included the respective headers during compilation), the app can then use <code>Stuff</code> as a fully qualified C++ object (without having to call the library explicitly).</p>
-<h2 id="usage">Running the code</h2>
-<p>On Mac OS X, you're already good to go. Clone this repo into the <code>openFrameworks/apps/yourapps/cpp-livecoding-2</code> directory, <code>make</code> and <code>make run</code>. Then, in a separate terminal, run <code>./compile-libs.sh</code> to start the continuous background compilation. At this point, you can start editing the <code>src/DynamicLibs/Libs/Stuff.cpp</code> source file and see any saved changes being reflected in your app in real-time. If things don't show up, check the output of <code>./compile-libs.sh</code> for compilation errors.</p>
-<p>On Linux, the situation is different: you will probably need to recompile your openFrameworks to use position-independent code. This is done by default on Mac OS for reasons of security and compliance with x86-64 architecture (see <a href="http://stackoverflow.com/questions/7216244/why-is-fpic-absolutely-necessary-on-64-and-not-on-32bit-platforms#7217082">this StackOverflow question</a>); the Makefile for Linux does not make the same assumptions (e.g. because you might not run a 64bit system). But it can be arranged: assuming you have cloned openFrameworks from its github repo, you can apply the provided patch and recompile:</p>
-<pre><code>cp 0001-add-fPIC-flag-to-compile.core.mk.patch ../../..
-cd ../../..
-git apply 0001-add-fPIC-flag-to-compile.core.mk.patch
-cd libs/openFrameworksCompiled/project   
-make clean
-make</code></pre>
-<p>After that, continue as described above for Mac OS X.</p>
-<h2 id="adapt">Rolling your own</h2>
-<p>The architecture of this contraption is best summed up in the following picture:</p>
-<figure>
-<img src="../diagrams/overview.png" alt="Architecture overview" /><figcaption>Architecture overview</figcaption>
-</figure>
-<p>All user-serviceable parts are contained within the <code>MyLibs</code> class and the <code>src/DynamicLibs/Libs</code> and <code>/Interfaces</code> directories. Extending this approach for your own needs will looks like this:</p>
-<figure>
-<img src="../diagrams/diy.png" alt="Extending the concept" /><figcaption>Extending the concept</figcaption>
-</figure>
-<p>To add a component for use as a dynamic library, first create a fitting interface. Looking at the example headers in <code>src/DynamicLibs/Interfaces</code>, you'll see that these are purely virtual, meaning: all functions are declared <code>virtual</code> and assigned <code>= 0</code>. This turns the interface class into an abstract class, preventing it from being instantiated and requiring any derived classes to provide implementations to all declared functions - which fits the intended use very nicely.</p>
-<table class="sourceCode cpp numberLines" startFrom="4"><tr class="sourceCode"><td class="lineNumbers"><pre>4
-5
-6
-7
-8
-9
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">class</span> GenericInterface
-{
-<span class="kw">public</span>:
-    <span class="kw">virtual</span> <span class="dt">void</span> update( ) = <span class="dv">0</span>;
-    <span class="kw">virtual</span> <span class="dt">void</span> draw( ) = <span class="dv">0</span>;
-    ...</code></pre></td></tr></table>
-<p>Afterwards, take the three exemplary steps laid out in the <code>MyLibs.h</code> file: <code>#include</code> the new interface, add another public member variable (holding a pointer to the interface type) and set it up with a corresponding line in the <code>initLibs</code> function.</p>
-<p>Last but not least, write the library itself! This comes down to implementing all the functionality promised in the interface class, plus 4 important extras: a set of functions called <code>create</code>, <code>destroy</code>, <code>getData</code> and <code>setData</code>, all of them declared with <code>extern &quot;C&quot;</code> linkage. Scoop their signatures from the example in <code>Stuff.cpp</code>:</p>
-<table class="sourceCode cpp numberLines" startFrom="55"><tr class="sourceCode"><td class="lineNumbers"><pre>55
-56
-57
-58
-59
-60
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="dt">extern</span> <span class="st">&quot;C&quot;</span> {
-    Stuff * create( ) { ...  }
-    <span class="dt">void</span> destroy( Stuff * obj ) { ...  }
-    <span class="dt">void</span>* getData( Stuff* obj ) { ... }
-    <span class="dt">void</span> setData( Stuff* obj, <span class="dt">void</span>* data ) { ... }
-}</code></pre></td></tr></table>
-<p>The first two are mandatory and are used to instantiate (and destroy) the new component. Since the main app has no detailed knowledge of the component, it is unable to instatiate it without help from the library; and since the linkage is constrained to C language constructs, these two functions have to do the leg work of calling the respective constructor &amp; destructor.</p>
-<p>The other two are optional and can be used to persist data across reloads of the component. By storing the components' data in a dedicated struct, the main application can take a hold of it, swap out the library for a freshly compiled new version, and put the data back in place afterwards. This works fine for simple structs, but will require additional legwork for more complex / nested structures.</p>
-<h2 id="wrapping-up">Wrapping up</h2>
-<p>And that's it! I hope you</p>
