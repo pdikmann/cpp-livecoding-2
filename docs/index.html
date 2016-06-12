@@ -1,7 +1,7 @@
 <h1 id="livecoding-using-c-and-openframeworks">Livecoding using C++ and openFrameworks</h1>
 <p>This article describes an approach and a setup to integrate live coding - a fast, iterative style of programming - into C++ and the openFrameworks environment. While the environment is traditionally hampered by the constraints of batch programming and long compilation times, this approach significantly reduces the time between writing the code and seeing the result of its execution, facilitating learning and experimentation and leading to increased productivity.</p>
 <h2 id="the-tldr">The TL;DR</h2>
-<p>Instead of compiling all our code into a single monolithic app, we are separating the different components into a set of dynamic, shared libraries that can be compiled separatedly and (re-)loaded into the main app at runtime. We're using a simple shell script that detects changes to our sourcefiles, tries to compile them and signals the main app on success. The main app then uses the (standard BSD and C libraries) <code>&lt;dlfcn.h&gt;</code> and <code>&lt;csignal&gt;</code> headers to work the magic.</p>
+<p>Instead of compiling all our code into a single monolithic app, we are separating the different components into a set of dynamic, shared libraries that can be compiled separatedly and (re-)loaded into the main app at runtime. We're using a simple shell script that detects changes to our sourcefiles, tries to compile them and signals the main app on success. The main app then uses the (standard BSD- and C-library) <code>&lt;dlfcn.h&gt;</code> and <code>&lt;csignal&gt;</code> headers to work the magic.</p>
 <p>You can read up on the basics of dynamic libraries in the following paragraphs, or jump straight to the conclusions on <a href="#usage">how to use the example code</a> and <a href="#adapt">how to adapt it to your needs</a>.</p>
 <h2 id="how-dynamic-libraries-work">How dynamic libraries work</h2>
 <p>Running an executable is straightforward for the operating system: it maps a piece of physical memory to a new instance of virtual memory, copies the executable into it, and starts running the code from the top (the beginning of virtual memory). If the executable allocates memory to store and retrieve values, it is taken from this same instance of virtual memory. When the machine code of the executable references variables and symbols (like the location of particular functions within the executable), these hard-coded references are also resolved in relation to the virtual memory.</p>
@@ -30,8 +30,7 @@
 <p>The pure virtual functions assure that the compiler of our main application will not look for their actual implementation when compiling the openFrameworks executable. The dynamic library then implements a derived class of this interface, supplying the functionality.</p>
 <h3 id="linkage">Linkage</h3>
 <p><a href="https://en.wikipedia.org/wiki/Linkage_%28software%29">Linkage</a> is the word describing the way that a compiler (and the linker) hooks up all the symbols defined in the source code (like function and variable names) when writing an executable. When compiling multiple files into a single application, the compiler has to take care to keep track of identical names, making sure that they refer to the same things even when they occur in different files. To achieve this, the compiler writes them into <a href="https://en.wikipedia.org/wiki/Symbol_table">symbol tables</a> (like the 'global offset table' mentioned before) for later reference.</p>
-<p>To accomodate the complex features of C++ (like Polymorphism, where multiple derived classes overwrite the same function name with different implementations), the compiler will have to 'mangle' these names - adding additional letters and numbers to make them distinct - in effect producing unpredictable, garbled entries in the symbol tables.</p>
-<p>Fortunately for us, the C language is more straightforward and does not require the compiler to mangle symbol names. Since many popular C++-compilers are also capable of compiling C, it is possible to expose certain names, unmangled, to the outside by declaring their linkage as <code>extern &quot;C&quot;</code>. Examples of this can be found in the <code>src/DynamicLibs/Libs/Stuff.cpp</code> file:</p>
+<p>To accomodate the complex features of C++ (like Polymorphism, where multiple derived classes overwrite the same function name with different implementations), the compiler will have to 'mangle' these names - adding additional letters and numbers to make them distinct - in effect producing unpredictable, garbled entries in the symbol tables. Fortunately for us, the C language is more straightforward and does not require the compiler to mangle symbol names. Since many popular C++-compilers are also capable of compiling C, it is possible to expose certain names, unmangled, to the outside by declaring their linkage as <code>extern &quot;C&quot;</code>. This is exactly what we're doing to allow our main app to communicate with our library code, for example in the <code>src/DynamicLibs/Libs/Stuff.cpp</code> file:</p>
 <table class="sourceCode cpp numberLines" startFrom="55"><tr class="sourceCode"><td class="lineNumbers"><pre>55
 56
 57
@@ -40,7 +39,7 @@
 60
 61
 62
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">extern</span> <span class="st">&quot;C&quot;</span> {
+</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="dt">extern</span> <span class="st">&quot;C&quot;</span> {
     Stuff * create( ) {
         <span class="kw">return</span> <span class="kw">new</span> Stuff;
     }
@@ -48,10 +47,7 @@
         <span class="kw">delete</span> ( obj );
     }
     ...</code></pre></td></tr></table>
-<p>Writing, loading and using a dynamic library in C++ poses an additional challenge: that of linkage. Linkage is the</p>
-<p>Using a dynamic library requires our executable to know two things: the capabilities of the library, and the actual names of the functions used to interact with it. Both of these pose different problems: This lays down two restrictions:</p>
-<p>While the openFrameworks app and the library both need to agree on practical details like function signatures and return types, it is not possible for one of them to include the other during compilation. Including the library source files in the same compilation unit as the rest of the app would include its functionality into our main executable, unable to be updated without recompiling the entire app. On the other hand, including the entirety of our openFrameworks app into the compilation unit of the library would defeat the purpose of this exercise by increasing compilation times. [this is bs] The solution is to use interface classes defining the calling conventions of the components. These interfaces are purely virtual, meaning: they don't provide any implementation details, but establish the class signature. [imprecise].</p>
-<p>The capabilities of our components are laid down in the sourcecode of the component. However, we cannot have our executable actually compile</p>
+<p>Instead of exposing every single function that is written in the library, we are providing the <code>create</code> and <code>destroy</code> functions to pass an object of type <code>Stuff</code> (implementing the <code>GenericInterface</code>). Since both the app and the library agreed on the interface for this object (aka included the respective headers during compilation), the app can then use <code>Stuff</code> as a fully qualified C++ object (without having to call the library explicitly).</p>
 <h2 id="usage">Running the code</h2>
 <p>On Mac OS X, you're already good to go. Clone this repo into the <code>openFrameworks/apps/yourapps/cpp-livecoding-2</code> directory, <code>make</code> and <code>make run</code>. Then, in a separate terminal, run <code>./compile-libs.sh</code> to start the continuous background compilation. At this point, you can start editing the <code>src/DynamicLibs/Libs/Stuff.cpp</code> source file and see any saved changes being reflected in your app in real-time. If things don't show up, check the output of <code>./compile-libs.sh</code> for compilation errors.</p>
 <p>On Linux, the situation is different: you will probably need to recompile your openFrameworks to use position-independent code. This is done by default on Mac OS for reasons of security and compliance with x86-64 architecture (see <a href="http://stackoverflow.com/questions/7216244/why-is-fpic-absolutely-necessary-on-64-and-not-on-32bit-platforms#7217082">this StackOverflow question</a>); the Makefile for Linux does not make the same assumptions (e.g. because you might not run a 64bit system). But it can be arranged: assuming you have cloned openFrameworks from its github repo, you can apply the provided patch and recompile:</p>
@@ -67,7 +63,10 @@ make</code></pre>
 <figure>
 <img src="../diagrams/overview.png" alt="Architecture overview" /><figcaption>Architecture overview</figcaption>
 </figure>
-<p>All user-serviceable parts are contained within the <code>MyLibs</code> class and the <code>src/DynamicLibs/Libs</code> and <code>/Interfaces</code> directories.</p>
+<p>All user-serviceable parts are contained within the <code>MyLibs</code> class and the <code>src/DynamicLibs/Libs</code> and <code>/Interfaces</code> directories. Extending this approach for your own needs will looks like this:</p>
+<figure>
+<img src="../diagrams/diy.png" alt="Extending the concept" /><figcaption>Extending the concept</figcaption>
+</figure>
 <p>To add a component for use as a dynamic library, first create a fitting interface. Looking at the example headers in <code>src/DynamicLibs/Interfaces</code>, you'll see that these are purely virtual, meaning: all functions are declared <code>virtual</code> and assigned <code>= 0</code>. This turns the interface class into an abstract class, preventing it from being instantiated and requiring any derived classes to provide implementations to all declared functions - which fits the intended use very nicely.</p>
 <table class="sourceCode cpp numberLines" startFrom="4"><tr class="sourceCode"><td class="lineNumbers"><pre>4
 5
@@ -89,7 +88,7 @@ make</code></pre>
 58
 59
 60
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">extern</span> <span class="st">&quot;C&quot;</span> {
+</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="dt">extern</span> <span class="st">&quot;C&quot;</span> {
     Stuff * create( ) { ...  }
     <span class="dt">void</span> destroy( Stuff * obj ) { ...  }
     <span class="dt">void</span>* getData( Stuff* obj ) { ... }

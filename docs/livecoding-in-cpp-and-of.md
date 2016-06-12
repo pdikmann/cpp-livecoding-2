@@ -4,7 +4,7 @@ This article describes an approach and a setup to integrate live coding - a fast
 
 ## The TL;DR
 
-Instead of compiling all our code into a single monolithic app, we are separating the different components into a set of dynamic, shared libraries that can be compiled separatedly and (re-)loaded into the main app at runtime. We're using a simple shell script that detects changes to our sourcefiles, tries to compile them and signals the main app on success. The main app then uses the (standard BSD and C libraries) `<dlfcn.h>` and `<csignal>` headers  to work the magic.
+Instead of compiling all our code into a single monolithic app, we are separating the different components into a set of dynamic, shared libraries that can be compiled separatedly and (re-)loaded into the main app at runtime. We're using a simple shell script that detects changes to our sourcefiles, tries to compile them and signals the main app on success. The main app then uses the (standard BSD- and C-library) `<dlfcn.h>` and `<csignal>` headers  to work the magic.
 
 You can read up on the basics of dynamic libraries in the following paragraphs, or jump straight to the conclusions on [how to use the example code](#usage) and [how to adapt it to your needs](#adapt).
 
@@ -47,9 +47,7 @@ The pure virtual functions assure that the compiler of our main application will
 
 [Linkage](https://en.wikipedia.org/wiki/Linkage_%28software%29) is the word describing the way that a compiler (and the linker) hooks up all the symbols defined in the source code (like function and variable names) when writing an executable. When compiling multiple files into a single application, the compiler has to take care to keep track of identical names, making sure that they refer to the same things even when they occur in different files. To achieve this, the compiler writes them into [symbol tables](https://en.wikipedia.org/wiki/Symbol_table) (like the 'global offset table' mentioned before) for later reference.
 
-To accomodate the complex features of C++ (like Polymorphism, where multiple derived classes overwrite the same function name with different implementations), the compiler will have to 'mangle' these names - adding additional letters and numbers to make them distinct - in effect producing unpredictable, garbled entries in the symbol tables.
-
-Fortunately for us, the C language is more straightforward and does not require the compiler to mangle symbol names. Since many popular C++-compilers are also capable of compiling C, it is possible to expose certain names, unmangled, to the outside by declaring their linkage as `extern "C"`. Examples of this can be found in the `src/DynamicLibs/Libs/Stuff.cpp` file:
+To accomodate the complex features of C++ (like Polymorphism, where multiple derived classes overwrite the same function name with different implementations), the compiler will have to 'mangle' these names - adding additional letters and numbers to make them distinct - in effect producing unpredictable, garbled entries in the symbol tables. Fortunately for us, the C language is more straightforward and does not require the compiler to mangle symbol names. Since many popular C++-compilers are also capable of compiling C, it is possible to expose certain names, unmangled, to the outside by declaring their linkage as `extern "C"`. This is exactly what we're doing to allow our main app to communicate with our library code, for example in the `src/DynamicLibs/Libs/Stuff.cpp` file:
 
 ``` {.cpp .numberLines startFrom="55"}
 extern "C" {
@@ -62,14 +60,7 @@ extern "C" {
     ...
 ```
 
-Writing, loading and using a dynamic library in C++ poses an additional challenge: that of linkage. Linkage is the 
-
-Using a dynamic library requires our executable to know two things: the capabilities of the library, and the actual names of the functions used to interact with it. Both of these pose different problems: This lays down two restrictions:
-
-While the openFrameworks app and the library both need to agree on practical details like function signatures and return types, it is not possible for one of them to include the other during compilation. Including the library source files in the same compilation unit as the rest of the app would include its functionality into our main executable, unable to be updated without recompiling the entire app. On the other hand, including the entirety of our openFrameworks app into the compilation unit of the library would defeat the purpose of this exercise by increasing compilation times. [this is bs]
-The solution is to use interface classes defining the calling conventions of the components. These interfaces are purely virtual, meaning: they don't provide any implementation details, but establish the class signature. [imprecise].
-
-The capabilities of our components are laid down in the sourcecode of the component. However, we cannot have our executable actually compile 
+Instead of exposing every single function that is written in the library, we are providing the `create` and `destroy` functions to pass an object of type `Stuff` (implementing the `GenericInterface`). Since both the app and the library agreed on the interface for this object (aka included the respective headers during compilation), the app can then use `Stuff` as a fully qualified C++ object (without having to call the library explicitly).
 
 ## Running the code {#usage}
 
@@ -94,7 +85,9 @@ The architecture of this contraption is best summed up in the following picture:
 
 ![Architecture overview](../diagrams/overview.png)
 
-All user-serviceable parts are contained within the `MyLibs` class and the `src/DynamicLibs/Libs` and `/Interfaces` directories. 
+All user-serviceable parts are contained within the `MyLibs` class and the `src/DynamicLibs/Libs` and `/Interfaces` directories. Extending this approach for your own needs will looks like this:
+
+![Extending the concept](../diagrams/diy.png)
 
 To add a component for use as a dynamic library, first create a fitting interface. Looking at the example headers in `src/DynamicLibs/Interfaces`, you'll see that these are purely virtual, meaning: all functions are declared `virtual` and assigned `= 0`. This turns the interface class into an abstract class, preventing it from being instantiated and requiring any derived classes to provide implementations to all declared functions - which fits the intended use very nicely.
 
