@@ -16,11 +16,11 @@ make</code></pre>
 <h2 id="adapt">Rolling your own</h2>
 <p>The architecture of this contraption is best summed up in the following picture:</p>
 <figure>
-<img src="../diagrams/overview.png" alt="Architecture overview" /><figcaption>Architecture overview</figcaption>
+<img src="../diagrams/overview.svg" alt="Architecture overview" /><figcaption>Architecture overview</figcaption>
 </figure>
 <p>All user-serviceable parts are contained within the <code>MyLibs</code> class and the <code>src/DynamicLibs/Libs</code> and <code>/Interfaces</code> directories. Extending this approach for your own needs will looks like this:</p>
 <figure>
-<img src="../diagrams/diy.png" alt="Extending the concept" /><figcaption>Extending the concept</figcaption>
+<img src="../diagrams/diy.svg" alt="Extending the concept" /><figcaption>Extending the concept</figcaption>
 </figure>
 <p>To add a component for use as a dynamic library, first create a fitting interface. Looking at the example headers in <code>src/DynamicLibs/Interfaces</code>, you'll see that these are purely virtual, meaning: all functions are declared <code>virtual</code> and assigned <code>= 0</code>. This turns the interface class into an abstract class, preventing it from being instantiated and requiring any derived classes to provide implementations to all declared functions - which fits the intended use very nicely.</p>
 <table class="sourceCode cpp numberLines" startFrom="4"><tr class="sourceCode"><td class="lineNumbers"><pre>4
@@ -41,7 +41,7 @@ make</code></pre>
 58
 59
 60
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="dt">extern</span> <span class="st">&quot;C&quot;</span> {
+</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">extern</span> <span class="st">&quot;C&quot;</span> {
     Stuff * create( ) { ...  }
     <span class="dt">void</span> destroy( Stuff * obj ) { ...  }
     <span class="dt">void</span>* getData( Stuff* obj ) { ... }
@@ -85,7 +85,7 @@ make</code></pre>
 60
 61
 62
-</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="dt">extern</span> <span class="st">&quot;C&quot;</span> {
+</pre></td><td class="sourceCode"><pre><code class="sourceCode cpp"><span class="kw">extern</span> <span class="st">&quot;C&quot;</span> {
     Stuff * create( ) {
         <span class="kw">return</span> <span class="kw">new</span> Stuff;
     }
