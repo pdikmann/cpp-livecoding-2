@@ -29,11 +29,11 @@ make
 
 The architecture of this contraption is best summed up in the following picture:
 
-![Architecture overview](../diagrams/overview.png)
+![Architecture overview](../diagrams/overview.svg)
 
 All user-serviceable parts are contained within the `MyLibs` class and the `src/DynamicLibs/Libs` and `/Interfaces` directories. Extending this approach for your own needs will looks like this:
 
-![Extending the concept](../diagrams/diy.png)
+![Extending the concept](../diagrams/diy.svg)
 
 To add a component for use as a dynamic library, first create a fitting interface. Looking at the example headers in `src/DynamicLibs/Interfaces`, you'll see that these are purely virtual, meaning: all functions are declared `virtual` and assigned `= 0`. This turns the interface class into an abstract class, preventing it from being instantiated and requiring any derived classes to provide implementations to all declared functions - which fits the intended use very nicely.
 
