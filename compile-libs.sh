@@ -27,7 +27,7 @@ function help () {
 # ------------------------------------------------------------
 # User Configuration
 pd_oF_dir=../../..                   # oF root directory
-pd_oF_process_name=cpp-livecoding-2  # the name of your project
+pd_oF_process_name=ofLive            # the name of your project
 pd_source_dir=./src/DynamicLibs/Libs # the directory containing the library sources
 pd_target_dir=./bin/data             # the directory to put the compiled libraries in
 pd_timeout=1                         # interval (in seconds) to check for changed timestamps
