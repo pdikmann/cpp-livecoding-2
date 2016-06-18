@@ -14,7 +14,7 @@ void signalHandler( int sig )
 void DynamicLibs::setup( )
 {
     std::signal( SIGINT, signalHandler );  // register signal handler
-    loadLibs( );
+    // loadLibs( );
     initLibs( );
     ofAddListener( ofEvents().update, this, &DynamicLibs::update, OF_EVENT_ORDER_BEFORE_APP );
 }
@@ -25,14 +25,49 @@ void DynamicLibs::update( ofEventArgs & eargs )
     {
         ofLogVerbose( "DynamicLibs" ) << "Swapping libs";
         sigSwap = 0;
-        swapLibs( );
+        // swapLibs( );
         initLibs( );
+    }
+}
+
+bool DynamicLibs::reloadLib( std::string name )
+{
+    auto it = libs.find( name );
+    if ( it == libs.end( ) )
+    {
+        // load library for the first time
+        ofLogVerbose( "DynamicLibs" ) << "First-time load of dynamic library " << name << " ...";
+        std::string soName = name + ".so";
+        std::string dylibName = name + ".dylib";
+        if ( ofFile::doesFileExist( soName ) )
+        {
+            loadLib( ofFile( soName ) );
+        }
+        else if ( ofFile::doesFileExist( dylibName ) )
+        {
+            loadLib( ofFile( dylibName ) );
+        }
+        else
+        {
+            ofLogError( "DynamicLibs" ) << "failed to find library file named " << name;
+            return false;
+        }
+    }
+    else
+    {
+        // rebind library
+        ofLogVerbose( "DynamicLibs" ) << "Reload of dynamic library " << name << " ...";
+        DynamicBinding< void >& binding = ( *it ).second;
+        bool ok = bindLib( binding.name,
+                           binding.path,
+                           binding );
+        if ( !ok ) { ofLogError( "DynamicLibs" ) << "re-binding failed for " << binding.name; }
+        return ok;
     }
 }
 
 DynamicBinding< void >& DynamicLibs::loadLib( ofFile file )
 {
-    // ofFile file = std::filesystem::path( apath );
     std::string name = file.getBaseName( );
     std::string path = file.getAbsolutePath( );
     ofLogVerbose( "DynamicLibs" ) << "Looking for dynamic library " << name;
@@ -47,7 +82,8 @@ DynamicBinding< void >& DynamicLibs::loadLib( ofFile file )
     return libs.at( name );
 }
 
-void DynamicLibs::loadLibs() {
+/*
+void DynamicLibs::loadAllLibs() {
     ofDirectory dir( "." ); // resolves to DataPath
     ofLogVerbose( "DynamicLibs" ) << "Looking for dynamic libraries in " << dir.getAbsolutePath();
     dir.allowExt( "dylib" );
@@ -59,20 +95,20 @@ void DynamicLibs::loadLibs() {
     }
 }
 
-// void DynamicLibs::swapLib( std::string name ) {
-//     ofLogVerbose( "DynamicLibs" ) << "Hot-swapping single library " << name;
-//     auto it = libs.find( name );
-//     if( it == libs.end() ) {
-//         ofLogError( "DynamicLibs" ) << "no such library loaded: " << name;
-//         return;
-//     }
-//     DynamicBinding< void > & binding = ( *it ).second;
-//     // reload library
-//     bool ok = bindLib( binding.name,
-//                        binding.path,
-//                        binding );
-//     if( !ok ) ofLogError( "DynamicLibs" ) << "re-binding failed for " << binding.name;
-// }
+void DynamicLibs::swapLib( std::string name ) {
+    ofLogVerbose( "DynamicLibs" ) << "Hot-swapping single library " << name;
+    auto it = libs.find( name );
+    if( it == libs.end() ) {
+        ofLogError( "DynamicLibs" ) << "no such library loaded: " << name;
+        return;
+    }
+    DynamicBinding< void > & binding = ( *it ).second;
+    // reload library
+    bool ok = bindLib( binding.name,
+                       binding.path,
+                       binding );
+    if( !ok ) ofLogError( "DynamicLibs" ) << "re-binding failed for " << binding.name;
+}
 
 void DynamicLibs::swapLibs( )
 {
@@ -84,10 +120,10 @@ void DynamicLibs::swapLibs( )
         bool ok = bindLib( binding.name,
                            binding.path,
                            binding );
-        if ( !ok )
-            ofLogError( "DynamicLibs" ) << "re-binding failed for " << binding.name;
+        if ( !ok ) { ofLogError( "DynamicLibs" ) << "re-binding failed for " << binding.name; }
     }
 }
+*/
 
 enum BindLibException {
     LIB_WONT_CLOSE,
@@ -114,7 +150,7 @@ bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding< v
     return true;
 }
 
-void DynamicLibs::destroyOldLib( DynamicBinding< void >& out, void* persistentData )
+void DynamicLibs::destroyOldLib( DynamicBinding< void >& out, void*( &persistentData ))
 {
     if ( out.object != nullptr )
     {
@@ -189,10 +225,10 @@ bool DynamicLibs::bindNewLib( DynamicBinding< void >& out )
 void DynamicLibs::createNewLib( DynamicBinding< void >& out, void* persistentData )
 {
     out.object = out.create( );
+    ofLogVerbose( "DynamicLibs" ) << "creating object " << out.object << " ...";
     if ( ( out.setData != nullptr ) && ( persistentData != nullptr ) )
     {
         ofLogVerbose( "DynamicLibs" ) << "re-introducing persistent data into " << out.name << " ...";
         out.setData( out.object, persistentData );
     }
-    ofLogVerbose( "DynamicLibs" ) << "creating object " << out.object << " ...";
 }
