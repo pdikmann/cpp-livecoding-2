@@ -89,18 +89,34 @@ void DynamicLibs::swapLibs( )
     }
 }
 
+enum BindLibException {
+    LIB_WONT_CLOSE,
+    LIB_WONT_OPEN,
+    LIB_WONT_BIND
+};
+
 bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding< void >& out )
 {
     bool ok = true;
     void* persistentData = nullptr;
-    destroyOldLib( out, persistentData );
-    ok = closeOldLib( out );
-    if( !ok ) return ok;
-    ok = openNewLib( name, path, out );
-    if( !ok ) return ok;
-    ok = bindNewLib( out );
-    if( !ok ) return ok;
-    createNewLib( out, persistentData );
+    try
+    {
+        destroyOldLib( out, persistentData );
+        ok = closeOldLib( out );
+        // if ( !ok )
+        //     return ok;
+        ok = openNewLib( name, path, out );
+        // if ( !ok )
+        //     return ok;
+        ok = bindNewLib( out );
+        // if ( !ok )
+        //     return ok;
+        createNewLib( out, persistentData );
+    }
+    catch ( BindLibException e )
+    {
+        return false;
+    }
     ofLogVerbose( "DynamicLibs" ) << "opened lib " << name << " OK!";
     return true;
 }
@@ -130,6 +146,7 @@ bool DynamicLibs::closeOldLib( DynamicBinding< void >& out )
         {
             ofLogError( "DynamicLibs" ) << "failed to close lib " << out.name;
             ofLogError( "DynamicLibs" ) << dlerror( );
+            throw( LIB_WONT_CLOSE );
             return false;
         }
         out.handle = nullptr;
@@ -147,6 +164,7 @@ bool DynamicLibs::openNewLib( std::string name, std::string path, DynamicBinding
     {
         ofLogError( "DynamicLibs" ) << "failed to open lib " << out.name << " at " << out.path;
         ofLogError( "DynamicLibs" ) << dlerror( );
+        throw( LIB_WONT_OPEN );
         return false;
     }
     return true;
@@ -163,6 +181,7 @@ bool DynamicLibs::bindNewLib( DynamicBinding< void >& out )
         ofLogError( "DynamicLibs" ) << "failed to bind essential symbols for "
                                     << out.name << " at " << out.path;
         ofLogError( "DynamicLibs" ) << dlerror( );
+        throw( LIB_WONT_BIND );
         return false;
     }
     if ( ( out.getData == nullptr ) || ( out.setData == nullptr ) )
