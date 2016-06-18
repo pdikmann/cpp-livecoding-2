@@ -91,18 +91,37 @@ void DynamicLibs::swapLibs( )
 
 bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding< void >& out )
 {
-    // destroy old object
+    bool ok = true;
     void* persistentData = nullptr;
+    destroyOldLib( out, persistentData );
+    ok = closeOldLib( out );
+    if( !ok ) return ok;
+    ok = openNewLib( name, path, out );
+    if( !ok ) return ok;
+    ok = bindNewLib( out );
+    if( !ok ) return ok;
+    createNewLib( out, persistentData );
+    ofLogVerbose( "DynamicLibs" ) << "opened lib " << name << " OK!";
+    return true;
+}
+
+void DynamicLibs::destroyOldLib( DynamicBinding< void >& out, void* persistentData )
+{
     if ( out.object != nullptr )
     {
-        if( out.getData != nullptr ){
+        if ( out.getData != nullptr )
+        {
+            ofLogVerbose( "DynamicLibs" ) << "retrieving persistent data from " << out.name;
             persistentData = out.getData( out.object );
         }
         ofLogVerbose( "DynamicLibs" ) << "destroying " << out.object << " ...";
         out.destroy( out.object );
         out.object = nullptr;
     }
-    // closing
+}
+
+bool DynamicLibs::closeOldLib( DynamicBinding< void >& out )
+{
     if ( out.handle != nullptr )
     {
         ofLogVerbose( "DynamicLibs" ) << "closing " << out.name << " ...";
@@ -115,38 +134,52 @@ bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding< v
         }
         out.handle = nullptr;
     }
-    // open
+    return true;
+}
+
+bool DynamicLibs::openNewLib( std::string name, std::string path, DynamicBinding< void >& out )
+{
     ofLogVerbose( "DynamicLibs" ) << "opening lib " << name << " ...";
     out.name = name;
     out.path = path;
     out.handle = dlopen( path.c_str( ), RTLD_LAZY );
     if ( out.handle == nullptr )
     {
-        ofLogError( "DynamicLibs" ) << "failed to open lib " << name << " at " << path;
+        ofLogError( "DynamicLibs" ) << "failed to open lib " << out.name << " at " << out.path;
         ofLogError( "DynamicLibs" ) << dlerror( );
         return false;
     }
-    // binding
+    return true;
+}
+
+bool DynamicLibs::bindNewLib( DynamicBinding< void >& out )
+{
     out.create = (void* (*)( ))dlsym( out.handle, "create" );
     out.destroy = (void (*)( void* ))dlsym( out.handle, "destroy" );
-    out.getData = (void* (*)( void* ))dlsym( out.handle, "getData" );        // optional, can be null
+    out.getData = (void* (*)( void* ))dlsym( out.handle, "getData" );  // optional, can be null
     out.setData = (void (*)( void*, void* ))dlsym( out.handle, "setData" );  // optional, can be null
     if ( ( out.create == nullptr ) || ( out.destroy == nullptr ) )
     {
-        ofLogError( "DynamicLibs" ) << "failed to bind essential symbols for " << name << " at " << path;
+        ofLogError( "DynamicLibs" ) << "failed to bind essential symbols for "
+                                    << out.name << " at " << out.path;
         ofLogError( "DynamicLibs" ) << dlerror( );
         return false;
     }
-    if ( ( out.getData == nullptr ) || ( out.setData == nullptr ) ){
-        ofLogNotice( "DynamicLibs" ) << "failed to bind optional symbols for " << name << " at " << path;
+    if ( ( out.getData == nullptr ) || ( out.setData == nullptr ) )
+    {
+        ofLogNotice( "DynamicLibs" ) << "failed to bind optional symbols for "
+                                     << out.name << " at " << out.path;
         ofLogNotice( "DynamicLibs" ) << dlerror( );
     }
-    // object creation
+    return true;
+}
+
+void DynamicLibs::createNewLib( DynamicBinding< void >& out, void* persistentData )
+{
     out.object = out.create( );
-    if ( ( out.setData != nullptr ) && ( persistentData != nullptr ) ){
+    if ( ( out.setData != nullptr ) && ( persistentData != nullptr ) )
+    {
         out.setData( out.object, persistentData );
     }
     ofLogVerbose( "DynamicLibs" ) << "creating object " << out.object << " ...";
-    ofLogVerbose( "DynamicLibs" ) << "opened lib " << name << " OK!";
-    return true;
 }
