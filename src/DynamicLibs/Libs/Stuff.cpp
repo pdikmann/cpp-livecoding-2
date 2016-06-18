@@ -42,8 +42,8 @@ void Stuff::draw( ) {
     ofDrawAxis( 3 );
     //
     ofPushStyle();
-    ofNoFill();
-    //ofFill();
+    //ofNoFill();
+    ofFill();
     ofSetColor( 255, 0, 0 );
     ofRotateZ( data.counter );
     ofDrawBox( 1, 1, 1 );

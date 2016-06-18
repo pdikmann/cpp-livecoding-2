@@ -97,20 +97,13 @@ enum BindLibException {
 
 bool DynamicLibs::bindLib( std::string name, std::string path, DynamicBinding< void >& out )
 {
-    bool ok = true;
     void* persistentData = nullptr;
     try
     {
         destroyOldLib( out, persistentData );
-        ok = closeOldLib( out );
-        // if ( !ok )
-        //     return ok;
-        ok = openNewLib( name, path, out );
-        // if ( !ok )
-        //     return ok;
-        ok = bindNewLib( out );
-        // if ( !ok )
-        //     return ok;
+        closeOldLib( out );
+        openNewLib( name, path, out );
+        bindNewLib( out );
         createNewLib( out, persistentData );
     }
     catch ( BindLibException e )
@@ -127,7 +120,7 @@ void DynamicLibs::destroyOldLib( DynamicBinding< void >& out, void* persistentDa
     {
         if ( out.getData != nullptr )
         {
-            ofLogVerbose( "DynamicLibs" ) << "retrieving persistent data from " << out.name;
+            ofLogVerbose( "DynamicLibs" ) << "retrieving persistent data from " << out.name << " ...";
             persistentData = out.getData( out.object );
         }
         ofLogVerbose( "DynamicLibs" ) << "destroying " << out.object << " ...";
@@ -172,10 +165,8 @@ bool DynamicLibs::openNewLib( std::string name, std::string path, DynamicBinding
 
 bool DynamicLibs::bindNewLib( DynamicBinding< void >& out )
 {
-    out.create = (void* (*)( ))dlsym( out.handle, "create" );
-    out.destroy = (void (*)( void* ))dlsym( out.handle, "destroy" );
-    out.getData = (void* (*)( void* ))dlsym( out.handle, "getData" );  // optional, can be null
-    out.setData = (void (*)( void*, void* ))dlsym( out.handle, "setData" );  // optional, can be null
+    out.create = (void* (*)( ))dlsym( out.handle, "create" );        // essential, must be present
+    out.destroy = (void (*)( void* ))dlsym( out.handle, "destroy" ); // essential, must be present
     if ( ( out.create == nullptr ) || ( out.destroy == nullptr ) )
     {
         ofLogError( "DynamicLibs" ) << "failed to bind essential symbols for "
@@ -184,6 +175,8 @@ bool DynamicLibs::bindNewLib( DynamicBinding< void >& out )
         throw( LIB_WONT_BIND );
         return false;
     }
+    out.getData = (void* (*)( void* ))dlsym( out.handle, "getData" );       // optional, can be null
+    out.setData = (void (*)( void*, void* ))dlsym( out.handle, "setData" ); // optional, can be null
     if ( ( out.getData == nullptr ) || ( out.setData == nullptr ) )
     {
         ofLogNotice( "DynamicLibs" ) << "failed to bind optional symbols for "
@@ -198,6 +191,7 @@ void DynamicLibs::createNewLib( DynamicBinding< void >& out, void* persistentDat
     out.object = out.create( );
     if ( ( out.setData != nullptr ) && ( persistentData != nullptr ) )
     {
+        ofLogVerbose( "DynamicLibs" ) << "re-introducing persistent data into " << out.name << " ...";
         out.setData( out.object, persistentData );
     }
     ofLogVerbose( "DynamicLibs" ) << "creating object " << out.object << " ...";
