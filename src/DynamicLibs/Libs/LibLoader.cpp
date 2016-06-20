@@ -10,16 +10,19 @@
 class LibLoaderHelper : public DynamicLibs
 {
 public:
+    // pointers to the objects (implementing your interfaces) obtained from your libraries
     CameraInterface* cam;
     GenericInterface* stuff;
+
 private:
     void initLibs( )
     {
-        // initLib( "LibLoader", libloader );	
+        // cast objects into action
+        // use library filenames, e.g. Stuff.so -> "Stuff"
 	initLib( "Stuff", stuff );
 	initLib( "Camera", cam );
 	stuff->linkCamLib( cam );
-	// stuff->setup( );
+	stuff->setup( );
     }
 };
 
@@ -27,20 +30,12 @@ class LibLoader : public LibLoaderInterface
 {
 public:
     void setup( );
-    void update( );
     LibLoaderHelper llh;
 };
 
 void LibLoader::setup( )
 {
     llh.setup( false );
-}
-
-void LibLoader::update( )
-{
-    /// @todo fix this workaround: register & un-register event listeners properly
-    llh.stuff->update( );
-    llh.stuff->draw( );
 }
 
 // -------------------------------------------------------------
@@ -53,17 +48,13 @@ extern "C" {
     }
     void* getData( LibLoader* obj )
     {
-        std::map< std::string, DynamicBinding< void > > * data = new std::map< std::string, DynamicBinding< void > >;
+        BindingsMap* data = new BindingsMap;
 	*data = obj->llh.libs;
-        // Data* data = new Data;
-        // *data = obj->data;
         return (void*)data;
     }
     void setData( LibLoader* obj, void* data )
     {
-        obj->llh.libs = *( (std::map< std::string, DynamicBinding< void > > *)data );
-        // obj->data = *( (Data*)data );
-        // delete ( (Data*)data );
-	delete( (std::map< std::string, DynamicBinding< void > > *)data );
+        obj->llh.libs = *( (BindingsMap*)data );
+	delete( (BindingsMap*)data );
     }
 }

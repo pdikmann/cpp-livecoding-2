@@ -11,6 +11,8 @@
 
 using namespace std;
 
+typedef std::map< std::string, DynamicBinding< void > > BindingsMap;
+
 class DynamicLibs
 {
 public:
@@ -28,7 +30,7 @@ public:
     }
     // variables
     static volatile std::sig_atomic_t sigSwap;             /// reload flag
-    std::map< std::string, DynamicBinding< void > > libs;  /// all loaded libraries
+    BindingsMap libs; /// all loaded libraries
 
 private:
     // functions
