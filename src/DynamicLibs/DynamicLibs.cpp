@@ -11,12 +11,15 @@ void signalHandler( int sig )
     DynamicLibs::sigSwap = 1;
 }
 
-void DynamicLibs::setup( )
+void DynamicLibs::setup( bool handleSignal )
 {
-    std::signal( SIGINT, signalHandler );  // register signal handler
     // loadLibs( );
     initLibs( );
-    ofAddListener( ofEvents().update, this, &DynamicLibs::update, OF_EVENT_ORDER_BEFORE_APP );
+    if( handleSignal )
+    {
+        std::signal( SIGINT, signalHandler );  // register signal handler
+        ofAddListener( ofEvents().update, this, &DynamicLibs::update, OF_EVENT_ORDER_BEFORE_APP );
+    }
 }
 
 void DynamicLibs::update( ofEventArgs & eargs )
@@ -28,6 +31,11 @@ void DynamicLibs::update( ofEventArgs & eargs )
         // swapLibs( );
         initLibs( );
     }
+}
+
+void DynamicLibs::manualUpdate( )
+{
+    initLibs( );
 }
 
 bool DynamicLibs::reloadLib( std::string name )

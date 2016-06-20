@@ -6,7 +6,7 @@ void ofApp::setup( )
     ofSetLogLevel( "DynamicLibs", OF_LOG_VERBOSE );
     ofSetLogLevel( "MyLibs", OF_LOG_VERBOSE );
     ofSetLogLevel( "ofApp", OF_LOG_ERROR );
-    libs.setup( );
+    libs.setup( true );
 }
 
 //--------------------------------------------------------------

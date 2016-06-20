@@ -15,9 +15,10 @@ class DynamicLibs
 {
 public:
     // functions
-    void setup( );                                   /// register signal handler, call loadLibs
+    void setup( bool handleSignal );                 /// init libs & register signal handler (optional)
+    void manualUpdate( );                            /// reload all loaded libraries manually
     template < typename T >
-    void initLib( string name, T& out_interface )    /// template for comfortable casting
+    void initLib( string name, T& out_interface )    /// user-facing template for comfortable casting
     {
         bool ok = reloadLib( name );
         if( ok ){
