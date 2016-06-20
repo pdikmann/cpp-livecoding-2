@@ -1,31 +1,28 @@
 #include "../DynamicLibs.h"
-#include "../DynamicLibs.cpp"
+#include "../DynamicLibs.cpp" // necessary
 #include "../Interfaces/LibLoaderInterface.h"
 
 // project-specific interfaces used for communication with your libraries
-#include "../Interfaces/GenericInterface.h"
-#include "../Interfaces/CameraInterface.h"
+#include "../Interfaces/DefaultInterface.h"
 
-// avoid multiple inheritance confusion, use composition instead
+// -------------------------------------------------------------
 class LibLoaderHelper : public DynamicLibs
 {
 public:
     // pointers to the objects (implementing your interfaces) obtained from your libraries
-    CameraInterface* cam;
-    GenericInterface* stuff;
+    DefaultInterface* defaultlib;
 
 private:
     void initLibs( )
     {
         // cast objects into action
         // use library filenames, e.g. Stuff.so -> "Stuff"
-	initLib( "Stuff", stuff );
-	initLib( "Camera", cam );
-	stuff->linkCamLib( cam );
-	stuff->setup( );
+	initLib( "Default", defaultlib );
+	defaultlib->setup( );
     }
 };
 
+// -------------------------------------------------------------
 class LibLoader : public LibLoaderInterface
 {
 public:
@@ -35,7 +32,7 @@ public:
 
 void LibLoader::setup( )
 {
-    llh.setup( false );
+    llh.setup( false ); // do NOT register signal & event handlers
 }
 
 // -------------------------------------------------------------
