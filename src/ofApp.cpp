@@ -13,16 +13,12 @@ void ofApp::setup( )
 void ofApp::update( )
 {
     ofLogVerbose( "ofApp" ) << "updating";
-    libs.stuff->update( );
 }
 
 //--------------------------------------------------------------
 void ofApp::draw( )
 {
     ofLogVerbose( "ofApp" ) << "drawing";
-    libs.cam->begin( );
-    libs.stuff->draw( );
-    libs.cam->end( );
 }
 
 //--------------------------------------------------------------

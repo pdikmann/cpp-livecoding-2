@@ -63,7 +63,7 @@ bool DynamicLibs::reloadLib( std::string name )
     }
     else
     {
-        // rebind library
+        // rebind existing library
         ofLogVerbose( "DynamicLibs" ) << "Reload of dynamic library " << name << " ...";
         DynamicBinding< void >& binding = ( *it ).second;
         bool ok = bindLib( binding.name,

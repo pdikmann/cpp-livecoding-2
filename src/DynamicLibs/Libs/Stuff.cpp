@@ -12,8 +12,9 @@ struct Data {
 class Stuff : public GenericInterface {
   public:
     Stuff();
-    void update( );
-    void draw( );
+    void setup( );
+    void update( ofEventArgs & eargs );
+    void draw( ofEventArgs & eargs );
     void linkCamLib( CameraInterface * aCamLib ) {
         camLib = aCamLib;
     }
@@ -28,7 +29,13 @@ Stuff::Stuff()
     data.counter = 0;
 }
 
-void Stuff::update( ) {
+void Stuff::setup()
+{
+        ofAddListener( ofEvents().update, this, &Stuff::update, OF_EVENT_ORDER_AFTER_APP );
+        ofAddListener( ofEvents().draw, this, &Stuff::draw, OF_EVENT_ORDER_AFTER_APP );
+}
+
+void Stuff::update( ofEventArgs & eargs ) {
     data.counter += .2f;
     ( data.counter >= 90 ) && ( data.counter -= 90 );
     // roll camera
@@ -37,18 +44,20 @@ void Stuff::update( ) {
     camLib->cam.setOrientation( camOrientation );
 }
 
-void Stuff::draw( ) {
+void Stuff::draw( ofEventArgs & eargs ) {
+    camLib->cam.begin();
     ofClear( 0 );
     ofDrawAxis( 3 );
     //
     ofPushStyle();
     //ofNoFill();
     ofFill();
-    ofSetColor( 255, 255, 0 );
+    ofSetColor( 0, 255, 0 );
     ofRotateZ( data.counter );
     ofDrawBox( 1, 1, 1 );
     //ofDrawSphere( 0.5 );
     ofPopStyle();
+    camLib->cam.end();
 }
 
 // -------------------------------------------------------------
