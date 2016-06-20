@@ -19,6 +19,7 @@ void ofApp::update( )
 void ofApp::draw( )
 {
     ofLogVerbose( "ofApp" ) << "drawing";
+    libs.libloader->update( );
 }
 
 //--------------------------------------------------------------

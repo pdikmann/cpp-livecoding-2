@@ -13,8 +13,10 @@ class Stuff : public GenericInterface {
   public:
     Stuff();
     void setup( );
-    void update( ofEventArgs & eargs );
-    void draw( ofEventArgs & eargs );
+    // void update( ofEventArgs & eargs );
+    // void draw( ofEventArgs & eargs );
+    void update( );
+    void draw( );
     void linkCamLib( CameraInterface * aCamLib ) {
         camLib = aCamLib;
     }
@@ -31,11 +33,11 @@ Stuff::Stuff()
 
 void Stuff::setup()
 {
-        ofAddListener( ofEvents().update, this, &Stuff::update, OF_EVENT_ORDER_AFTER_APP );
-        ofAddListener( ofEvents().draw, this, &Stuff::draw, OF_EVENT_ORDER_AFTER_APP );
+        // ofAddListener( ofEvents().update, this, &Stuff::update, OF_EVENT_ORDER_AFTER_APP );
+        // ofAddListener( ofEvents().draw, this, &Stuff::draw, OF_EVENT_ORDER_AFTER_APP );
 }
 
-void Stuff::update( ofEventArgs & eargs ) {
+void Stuff::update( ) {
     data.counter += .2f;
     ( data.counter >= 90 ) && ( data.counter -= 90 );
     // roll camera
@@ -44,7 +46,7 @@ void Stuff::update( ofEventArgs & eargs ) {
     camLib->cam.setOrientation( camOrientation );
 }
 
-void Stuff::draw( ofEventArgs & eargs ) {
+void Stuff::draw( ) {
     camLib->cam.begin();
     ofClear( 0 );
     ofDrawAxis( 3 );
@@ -52,7 +54,7 @@ void Stuff::draw( ofEventArgs & eargs ) {
     ofPushStyle();
     //ofNoFill();
     ofFill();
-    ofSetColor( 0, 255, 0 );
+    ofSetColor( 0, 255, 255 );
     ofRotateZ( data.counter );
     ofDrawBox( 1, 1, 1 );
     //ofDrawSphere( 0.5 );
