@@ -2,33 +2,26 @@
 #include "of3dGraphics.h"
 #include "ofVec3f.h"
 #include "ofLog.h"
-#include "../Interfaces/GenericInterface.h"
-#include "../Interfaces/CameraInterface.h"
+#include "../Interfaces/ParticlesInterface.h"
 
 struct Data {
     float counter;
 };
 
-class Stuff : public GenericInterface {
+class Particles : public ParticlesInterface {
   public:
-    Stuff();
+    Particles();
     void update( );
     void draw( );
-    void linkCamLib( CameraInterface * aCamLib ) {
-        camLib = aCamLib;
-    }
     Data data;
-
-  private:
-    CameraInterface * camLib;
 };
 
-Stuff::Stuff()
+Particles::Particles()
 {
     data.counter = 0;
 }
 
-void Stuff::update( ) {
+void Particles::update( ) {
     data.counter += .2f;
     ( data.counter >= 90 ) && ( data.counter -= 90 );
     // roll camera
@@ -37,7 +30,7 @@ void Stuff::update( ) {
     camLib->cam.setOrientation( camOrientation );
 }
 
-void Stuff::draw( ) {
+void Particles::draw( ) {
     ofClear( 0 );
     ofDrawAxis( 3 );
     //
@@ -53,19 +46,19 @@ void Stuff::draw( ) {
 
 // -------------------------------------------------------------
 extern "C" {
-    Stuff * create( ) {
-        return new Stuff;
+    Particles * create( ) {
+        return new Particles;
     }
-    void destroy( Stuff * obj ) {
+    void destroy( Particles * obj ) {
         delete ( obj );
     }
-    void* getData( Stuff* obj )
+    void* getData( Particles* obj )
     {
         Data* data = new Data;
         *data = obj->data;
         return (void*)data;
     }
-    void setData( Stuff* obj, void* data )
+    void setData( Particles* obj, void* data )
     {
         obj->data = *( (Data*)data );
         delete ( (Data*)data );
