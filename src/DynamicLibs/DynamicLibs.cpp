@@ -49,11 +49,11 @@ bool DynamicLibs::reloadLib( std::string name )
         std::string dylibName = name + ".dylib";
         if ( ofFile::doesFileExist( soName ) )
         {
-            loadLib( ofFile( soName ) );
+            return loadLib( ofFile( soName ) );
         }
         else if ( ofFile::doesFileExist( dylibName ) )
         {
-            loadLib( ofFile( dylibName ) );
+            return loadLib( ofFile( dylibName ) );
         }
         else
         {
@@ -74,7 +74,7 @@ bool DynamicLibs::reloadLib( std::string name )
     }
 }
 
-DynamicBinding< void >& DynamicLibs::loadLib( ofFile file )
+bool DynamicLibs::loadLib( ofFile file )
 {
     std::string name = file.getBaseName( );
     std::string path = file.getAbsolutePath( );
@@ -87,7 +87,8 @@ DynamicBinding< void >& DynamicLibs::loadLib( ofFile file )
     {
         libs.insert( std::pair< std::string, DynamicBinding< void > >( name, binding ) );
     }
-    return libs.at( name );
+    // return libs.at( name );
+    return ok;
 }
 
 /*

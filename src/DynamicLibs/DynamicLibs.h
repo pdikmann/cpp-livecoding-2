@@ -26,6 +26,8 @@ public:
         if( ok ){
             out_interface = static_cast< T >( libs.at( name ).object );
             ofLogVerbose( "DynamicLibs" ) << "casting " << name << " to " << out_interface;
+        } else {
+            ofLogError( "DynamicLibs" ) << "lib " << name << " not initialized correctly!";
         }
     }
     // variables
@@ -37,7 +39,7 @@ private:
     void update( ofEventArgs & eargs );              /// check if re-load was signalled. called in ofApp::update
     //
     bool reloadLib( std::string name );              /// check if lib is loaded, load or rebind accordingly
-    DynamicBinding< void > & loadLib( ofFile file ); /// load a specific library (and store a dynamicBinding in `libs`). assumes this is the first time the lib is loaded!
+    bool loadLib( ofFile file ); /// load a specific library (and store a dynamicBinding in `libs`). assumes this is the first time the lib is loaded!
     // void loadAllLibs( );                          /// load all .dylibs from ./bin/data (and store dynamicBindings in `libs`)
     // void swapLib( std::string name );             /// re-load specific library
     // void swapLibs( );                             /// re-load all previously loaded libs
