@@ -17,7 +17,6 @@ private:
         // cast objects into action
         // use library filenames, e.g. Stuff.so -> "Stuff"
         initLib( "LibLoader", libloader );	
-        ofLog() << "post-init in mylibs";
 	libloader->setup( );
     }
 };

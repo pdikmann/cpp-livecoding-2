@@ -13,7 +13,6 @@ void signalHandler( int sig )
 
 void DynamicLibs::setup( bool handleSignal )
 {
-    // loadLibs( );
     initLibs( );
     if( handleSignal )
     {
@@ -28,7 +27,6 @@ void DynamicLibs::update( ofEventArgs & eargs )
     {
         ofLogVerbose( "DynamicLibs" ) << "Swapping libs";
         sigSwap = 0;
-        // swapLibs( );
         initLibs( );
     }
 }
@@ -41,17 +39,18 @@ void DynamicLibs::manualUpdate( )
 bool DynamicLibs::reloadLib( std::string name )
 {
     auto it = libs.find( name );
-    if ( it == libs.end( ) )
+    if ( it == libs.end( ) ) // library is not yet registered
     {
-        // load library for the first time
+        // load it for the first time
         ofLogVerbose( "DynamicLibs" ) << "First-time load of dynamic library " << name << " ...";
+	// look for .so (linux) and .dylib (mac os) files
         std::string soName = name + ".so";
         std::string dylibName = name + ".dylib";
-        if ( ofFile::doesFileExist( soName ) )
+        if ( ofFile::doesFileExist( soName ) ) // linux
         {
             return loadLib( ofFile( soName ) );
         }
-        else if ( ofFile::doesFileExist( dylibName ) )
+        else if ( ofFile::doesFileExist( dylibName ) ) // mac os
         {
             return loadLib( ofFile( dylibName ) );
         }
@@ -61,7 +60,7 @@ bool DynamicLibs::reloadLib( std::string name )
             return false;
         }
     }
-    else
+    else // library is already registered
     {
         // rebind existing library
         ofLogVerbose( "DynamicLibs" ) << "Reload of dynamic library " << name << " ...";
