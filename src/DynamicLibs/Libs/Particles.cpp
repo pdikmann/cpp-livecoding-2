@@ -24,10 +24,6 @@ Particles::Particles()
 void Particles::update( ) {
     data.counter += .2f;
     ( data.counter >= 90 ) && ( data.counter -= 90 );
-    // roll camera
-    ofVec3f camOrientation = camLib->cam.getOrientationEuler();
-    camOrientation.z = sin( data.counter / 90.f * 2 * PI ) * 30;
-    camLib->cam.setOrientation( camOrientation );
 }
 
 void Particles::draw( ) {

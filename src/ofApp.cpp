@@ -7,22 +7,26 @@ void ofApp::setup( )
     ofSetLogLevel( "MyLibs", OF_LOG_VERBOSE );
     ofSetLogLevel( "ofApp", OF_LOG_ERROR );
     libs.setup( );
+    cam.setPosition( 0, 0, 10 );
+    cam.setFov( 90 );
+    cam.setNearClip( 0.01 );
+    cam.setFarClip( 100 );
 }
 
 //--------------------------------------------------------------
 void ofApp::update( )
 {
     ofLogVerbose( "ofApp" ) << "updating";
-    libs.stuff->update( );
+    libs.particles->update( );
 }
 
 //--------------------------------------------------------------
 void ofApp::draw( )
 {
     ofLogVerbose( "ofApp" ) << "drawing";
-    libs.cam->begin( );
-    libs.stuff->draw( );
-    libs.cam->end( );
+    cam.begin();
+    libs.particles->draw( );
+    cam.end();
 }
 
 //--------------------------------------------------------------

@@ -22,5 +22,7 @@ public:
     void dragEvent( ofDragInfo dragInfo );
     void gotMessage( ofMessage msg );
 
+    ofCamera cam;
+
     MyLibs libs;
 };
