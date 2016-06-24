@@ -173,7 +173,7 @@ do
         fi
     done
 
-    # log compilation results, signal app on success
+    # log compilation results, plan to signal app on success
     now=$(date +"%H:%M:%S")
     if [ $pd_renew_timestamp -eq 1 ] 
     then
