@@ -6,23 +6,17 @@ void ofApp::setup( )
     ofSetLogLevel( "DynamicLibs", OF_LOG_VERBOSE );
     ofSetLogLevel( "MyLibs", OF_LOG_VERBOSE );
     ofSetLogLevel( "ofApp", OF_LOG_ERROR );
-    libs.setup( );
+    libs.setup( true );
 }
 
 //--------------------------------------------------------------
 void ofApp::update( )
 {
-    ofLogVerbose( "ofApp" ) << "updating";
-    libs.stuff->update( );
 }
 
 //--------------------------------------------------------------
 void ofApp::draw( )
 {
-    ofLogVerbose( "ofApp" ) << "drawing";
-    libs.cam->begin( );
-    libs.stuff->draw( );
-    libs.cam->end( );
 }
 
 //--------------------------------------------------------------
