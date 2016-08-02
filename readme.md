@@ -1,6 +1,6 @@
 # Getting started
 
-- run `compile-libs.sh`
+- run `compile-libs.sh -f`
 - `in another terminal, make` and `make run` the application
 - edit `src/DynamicLibs/Libs/Stuff.cpp` - e.g. the `draw` function - and save it to see *live updates!*
 
