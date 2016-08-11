@@ -1,3 +1,8 @@
+# Hint
+
+This is WIP as `gcc 5` might have changed linking behavior.
+In particular, it might now be necessary to pass the `--export-dynamic` flag to the linker by adding `PROJECT_LDFLAGS += -Wl,--export-dynamic` to `config.make`. This might cause errors with the `clang` compiler, so further investigation is due.
+
 # Getting started
 
 - run `compile-libs.sh -f`
